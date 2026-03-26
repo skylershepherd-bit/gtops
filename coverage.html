@@ -72,10 +72,7 @@ body{background:var(--black);color:#d4d4d4;font-family:var(--sans);line-height:1
 .wait-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .wait-label{font-size:14px;font-weight:500;color:#fff}
 .wait-sub{font-family:var(--mono);font-size:10px;color:var(--g400);margin-top:2px}
-.wait-controls{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.wait-btn{background:var(--g700);border:none;color:var(--g300);width:32px;height:32px;border-radius:6px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s}
-.wait-btn:hover{background:var(--g600);color:#fff}
-.wait-val{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--yellow);min-width:64px;text-align:center}
+.wait-val{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--yellow);min-width:64px;text-align:right}
 
 /* CLOSED TOGGLE */
 .closed-row{background:var(--g900);border:1px solid var(--g700);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
@@ -172,16 +169,20 @@ body{background:var(--black);color:#d4d4d4;font-family:var(--sans);line-height:1
 
   <!-- WAIT TIME -->
   <div class="wait-section">
-    <div class="wait-row">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div>
         <div class="wait-label">Estimated Wait</div>
         <div class="wait-sub">Shown to guests on your website</div>
       </div>
-      <div class="wait-controls">
-        <button class="wait-btn" onclick="adjustWait(-5)">−</button>
-        <div class="wait-val" id="wait-display">No wait</div>
-        <button class="wait-btn" onclick="adjustWait(5)">+</button>
-      </div>
+      <div class="wait-val" id="wait-display">No wait</div>
+    </div>
+    <input type="range" min="0" max="90" step="5" value="0" id="wait-slider"
+      style="width:100%;height:8px;appearance:none;background:var(--g700);border-radius:4px;outline:none;cursor:pointer;accent-color:var(--yellow)"
+      oninput="updateWaitSlider(this.value)">
+    <div style="display:flex;justify-content:space-between;margin-top:6px">
+      <span style="font-family:var(--mono);font-size:10px;color:var(--g400)">No wait</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--g400)">45 min</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--g400)">90 min</span>
     </div>
   </div>
 
@@ -248,8 +249,8 @@ function setStatus(s) {
   updateCard();
 }
 
-function adjustWait(delta) {
-  waitMinutes = Math.max(0, waitMinutes + delta);
+function updateWaitSlider(v) {
+  waitMinutes = parseInt(v);
   document.getElementById('wait-display').textContent = fmtWait(waitMinutes);
   updateCard();
 }
@@ -339,7 +340,8 @@ onValue(statusRef, snap => {
 }, { onlyOnce: true });
 
 // Expose functions to global scope
-window.setStatus    = setStatus;
+window.setStatus         = setStatus;
+  window.updateWaitSlider  = updateWaitSlider;
 window.adjustWait   = adjustWait;
 window.toggleClosed = toggleClosed;
 window.publish      = publish;
