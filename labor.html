@@ -301,7 +301,6 @@ body {
         <div class="ctrl-row"><label>Bartender <span id="bar-wage-out">$2.15</span></label><input type="range" min="2.13" max="20" step="0.12" value="2.15" id="bar-wage" oninput="recalc()"></div>
         <div class="ctrl-row"><label>Host <span id="host-wage-out">$10.00</span></label><input type="range" min="8" max="18" step="0.25" value="10" id="host-wage" oninput="recalc()"></div>
         <div class="ctrl-row"><label>Avg check / guest <span id="avg-check-out">$16</span></label><input type="range" min="10" max="30" step="1" value="16" id="avg-check" oninput="recalc()"></div>
-        <div class="ctrl-row"><label>Payroll burden <span id="burden-out">15%</span></label><input type="range" min="10" max="35" step="1" value="15" id="burden" oninput="recalc()"></div>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-label">Host Schedule</div>
@@ -407,7 +406,6 @@ body {
     <div class="ctrl-row"><label>Bartender <span id="m-bar-wage-out">$2.15</span></label><input type="range" min="2.13" max="20" step="0.12" value="2.15" id="m-bar-wage" oninput="sync('bar-wage','m-bar-wage')"></div>
     <div class="ctrl-row"><label>Host wage <span id="m-host-wage-out">$10.00</span></label><input type="range" min="8" max="18" step="0.25" value="10" id="m-host-wage" oninput="sync('host-wage','m-host-wage')"></div>
     <div class="ctrl-row"><label>Avg check <span id="m-avg-check-out">$16</span></label><input type="range" min="10" max="30" step="1" value="16" id="m-avg-check" oninput="sync('avg-check','m-avg-check')"></div>
-    <div class="ctrl-row"><label>Payroll burden <span id="m-burden-out">15%</span></label><input type="range" min="10" max="35" step="1" value="15" id="m-burden" oninput="sync('burden','m-burden')"></div>
   </div>
 </div>
 
@@ -440,7 +438,7 @@ function recalc() {
   const barWage  = +$('bar-wage').value;
   const hostWage = +$('host-wage').value;
   const avgCheck = +$('avg-check').value;
-  const burden   = +$('burden').value / 100;
+  const burden   = 0.15;
 
   const setOut = (id, v) => { const el=$(id+'-out'); if(el) el.textContent=v; };
   setOut('sv-ratio',  svRatio);         setOut('m-sv-ratio',  svRatio);
@@ -587,7 +585,7 @@ function initCollapsibles() {
 window.addEventListener('resize', initCollapsibles);
 
 function shiftWeek(dir) { weekOffset+=dir; updateWeekTag(); }
-updateWeekTag(); recalc(); initCollapsibles();
+document.addEventListener("DOMContentLoaded", function() { updateWeekTag(); recalc(); initCollapsibles(); });
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js')); }
 </script>
 </body>
