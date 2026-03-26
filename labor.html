@@ -138,6 +138,13 @@ body {
 .section-hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
 .section-hdr-title { font-size: 11px; font-weight: 600; color: #fff; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
 .section-hdr-line { flex: 1; height: 1px; background: var(--gray-700); }
+
+.section-hdr.collapsible { cursor: pointer; user-select: none; }
+.section-hdr.collapsible:hover .section-hdr-title { color: var(--yellow); }
+.chevron { font-size: 10px; color: var(--gray-400); transition: transform 0.2s; flex-shrink: 0; }
+.section-hdr.collapsed .chevron { transform: rotate(-90deg); }
+.collapsible-body { transition: none; }
+.collapsible-body.collapsed { display: none; }
 .chart-legend { display: flex; gap: 14px; }
 .legend-item { display: flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 9px; color: var(--gray-400); white-space: nowrap; }
 .legend-dot { width: 7px; height: 7px; border-radius: 1px; flex-shrink: 0; }
@@ -306,8 +313,8 @@ body {
         <div class="day-card"><div class="day-card-name">Sat</div><input type="number" id="d-sat" value="240" min="0" oninput="recalc()"><div class="day-steppers"><button class="day-btn" onclick="step('d-sat',-5)">−</button><button class="day-btn" onclick="step('d-sat',5)">+</button></div><div class="day-tier" id="t-sat"></div></div>
       </div>
 
-      <div class="section-hdr"><span class="section-hdr-title">Staffing Recommendation</span><div class="section-hdr-line"></div></div>
-
+      <div class="section-hdr collapsible" id="hdr-staffing" onclick="toggleSection('staffing')"><span class="section-hdr-title">Staffing Recommendation</span><div class="section-hdr-line"></div><span class="chevron">▼</span></div>
+      <div class="collapsible-body" id="body-staffing">
       <div class="table-wrap">
         <table class="sched-table">
           <thead><tr><th>Day</th><th>Covers</th><th>Servers</th><th>Bar</th><th>Host</th><th>Hrs</th><th>SPLH</th><th class="right">Est. cost</th></tr></thead>
@@ -315,13 +322,16 @@ body {
           <tfoot id="sched-foot"></tfoot>
         </table>
       </div>
-
       <div class="sched-cards" id="sched-cards"></div>
+      </div>
 
-      <div class="section-hdr"><span class="section-hdr-title">SPLH by Day</span><div class="section-hdr-line"></div><div class="chart-legend"><div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>SPLH</div><div class="legend-item"><div class="legend-dot" style="background:var(--gray-600)"></div>Target $50</div></div></div>
+      <div class="section-hdr collapsible" id="hdr-splh" onclick="toggleSection('splh')"><span class="section-hdr-title">SPLH by Day</span><div class="section-hdr-line"></div><div class="chart-legend"><div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>SPLH</div><div class="legend-item"><div class="legend-dot" style="background:var(--gray-600)"></div>Target $50</div></div><span class="chevron">▼</span></div>
+      <div class="collapsible-body" id="body-splh">
       <div class="chart-card"><div style="position:relative;height:160px;"><canvas id="splh-chart"></canvas></div></div>
+      </div>
 
-      <div class="section-hdr"><span class="section-hdr-title">Cost Breakdown</span><div class="section-hdr-line"></div></div>
+      <div class="section-hdr collapsible" id="hdr-breakdown" onclick="toggleSection('breakdown')"><span class="section-hdr-title">Cost Breakdown</span><div class="section-hdr-line"></div><span class="chevron">▼</span></div>
+      <div class="collapsible-body" id="body-breakdown">
       <div class="breakdown-grid">
         <div class="breakdown-card">
           <div class="breakdown-card-title">Weekly Labor Detail</div>
@@ -361,6 +371,7 @@ body {
             <span class="breakdown-val" id="b-delta">—</span>
           </div>
         </div>
+      </div>
       </div>
 
       <div class="report-footer">
@@ -405,7 +416,31 @@ function tier(c) {
 function splhColor(v) { return v >= 60 ? '#38a169' : v >= 35 ? '#e8922a' : '#e53e3e'; }
 function fmt$(n) { return '$' + Math.round(n).toLocaleString(); }
 
-function step(id, d) { const el=$(id); el.value=Math.max(0,(parseInt(el.value)||0)+d); recalc(); }
+function toggleSection(id) {
+  if (window.innerWidth > 768) return;
+  const hdr  = document.getElementById('hdr-' + id);
+  const body = document.getElementById('body-' + id);
+  const open = !hdr.classList.contains('collapsed');
+  hdr.classList.toggle('collapsed', open);
+  body.classList.toggle('collapsed', open);
+}
+
+function initCollapsibles() {
+  if (window.innerWidth <= 768) {
+    ['staffing','splh','breakdown'].forEach(id => {
+      document.getElementById('hdr-' + id).classList.add('collapsed');
+      document.getElementById('body-' + id).classList.add('collapsed');
+    });
+  } else {
+    ['staffing','splh','breakdown'].forEach(id => {
+      document.getElementById('hdr-' + id).classList.remove('collapsed');
+      document.getElementById('body-' + id).classList.remove('collapsed');
+    });
+  }
+}
+
+window.addEventListener('resize', initCollapsibles);
+
 function openDrawer()  { $('overlay').style.display='block'; $('drawer').classList.add('open'); }
 function closeDrawer() { $('overlay').style.display='none';  $('drawer').classList.remove('open'); }
 function sync(deskId, mobId) { $(deskId).value = $(mobId).value; recalc(); }
@@ -546,7 +581,7 @@ function updateWeekTag() {
   if (labelEl) labelEl.textContent = monthName + ' labor %';
 }
 function shiftWeek(dir) { weekOffset+=dir; updateWeekTag(); }
-updateWeekTag(); recalc();
+updateWeekTag(); recalc(); initCollapsibles();
 </script>
 </body>
 </html>
