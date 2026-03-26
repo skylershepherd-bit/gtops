@@ -597,9 +597,7 @@ tbody tr:hover td { background: var(--gray-800); }
 <!-- ── Top nav ── -->
 <nav class="topnav">
   <div class="nav-logo">
-    <div class="nav-logo-mark">
-      <svg viewBox="0 0 16 16"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z"/></svg>
-    </div>
+    <div class="nav-logo-mark"><svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><text x="14" y="20" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="15" fill="#000000">GT</text></svg></div>
     <a href="index.html" style="font-family:monospace;font-size:10px;color:#666;text-decoration:none;letter-spacing:0.08em;margin-right:10px;">← GT Ops</a><span class="nav-company">OpsIQ</span>
   </div>
   <div class="nav-divider"></div>
@@ -962,5 +960,5 @@ zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('o
 zone.addEventListener('dragleave', ()=>zone.classList.remove('over'));
 zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('over'); handleFile(e.dataTransfer.files[0]); });
 </script>
-</body>
+<script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js");}</script></body>
 </html>
