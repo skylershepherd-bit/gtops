@@ -590,12 +590,28 @@ tbody tr:hover td { background: var(--gray-800); }
   letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--gray-600);
 }
+@media (max-width: 768px) {
+  html { font-size: 16px; }
+}
+
+.back-btn {
+  display: none;
+  align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  color: var(--gray-300); font-family: var(--mono);
+  font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0; margin-right: 10px; text-decoration: none;
+}
+.back-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.back-btn:hover { color: #fff; }
+@media (max-width: 768px) { .back-btn { display: flex; } }
 </style>
 </head>
 <body>
 
 <!-- ── Top nav ── -->
 <nav class="topnav">
+  <a class="back-btn" href="index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Home</a>
   <div class="nav-logo">
     <div class="nav-logo-mark"><svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><text x="14" y="20" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="15" fill="#000000">GT</text></svg></div>
     <a href="index.html" style="font-family:monospace;font-size:10px;color:#666;text-decoration:none;letter-spacing:0.08em;margin-right:10px;">← GT Ops</a><span class="nav-company">OpsIQ</span>

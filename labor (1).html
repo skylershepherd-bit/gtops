@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Theory — Labor Scheduler</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black:    #000000;
+  --gray-950: #0a0a0a;
+  --gray-900: #111111;
+  --gray-800: #1a1a1a;
+  --gray-700: #2a2a2a;
+  --gray-600: #3a3a3a;
+  --gray-400: #666666;
+  --gray-300: #888888;
+  --yellow:   #f5e014;
+  --yellow-d: #c9b800;
+  --yellow-dim: rgba(245,224,20,0.08);
+  --red:      #e53e3e;
+  --amber:    #e8922a;
+  --green:    #38a169;
+  --sans: 'Inter', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+html { font-size: 14px; }
+body {
+  background: var(--black);
+  color: #d4d4d4;
+  font-family: var(--sans);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TOP NAV ─────────────────────────────────────── */
+.topnav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 52px;
+  background: var(--gray-950);
+  border-bottom: 1px solid var(--gray-700);
+  display: flex; align-items: center;
+  padding: 0 16px; gap: 0;
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; }
+.nav-logo-mark {
+  width: 28px; height: 28px;
+  background: var(--yellow); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.nav-logo-mark svg { width: 16px; height: 16px; fill: var(--black); }
+.nav-company { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #fff; }
+.nav-divider { width: 1px; height: 20px; background: var(--gray-700); margin: 0 14px; }
+.nav-product { font-size: 12px; color: var(--gray-300); letter-spacing: 0.04em; }
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.nav-tag {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gray-400); background: var(--gray-800);
+  border: 1px solid var(--gray-700); border-radius: 4px;
+  padding: 3px 8px; white-space: nowrap;
+}
+.nav-hide { display: none; }
+.settings-toggle {
+  display: none; background: var(--gray-800); border: 1px solid var(--gray-700);
+  border-radius: 6px; color: var(--gray-300);
+  width: 34px; height: 34px; cursor: pointer;
+  align-items: center; justify-content: center; flex-shrink: 0;
+}
+.settings-toggle svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── PAGE ────────────────────────────────────────── */
+.page { padding-top: 52px; min-height: 100vh; }
+
+/* ── SUB-HEADER ──────────────────────────────────── */
+.sub-header {
+  background: var(--gray-900); border-bottom: 1px solid var(--gray-700);
+  padding: 0 16px; display: flex; align-items: center; justify-content: space-between;
+  height: 52px; gap: 12px;
+}
+.sub-title { font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; }
+.sub-period { font-family: var(--mono); font-size: 11px; color: var(--gray-400); }
+.sub-left { display: flex; align-items: baseline; gap: 12px; }
+.week-nav { display: flex; align-items: center; gap: 5px; }
+.week-btn {
+  background: var(--gray-800); border: 1px solid var(--gray-700); border-radius: 4px;
+  color: var(--gray-300); width: 28px; height: 28px; cursor: pointer;
+  font-size: 15px; display: flex; align-items: center; justify-content: center;
+}
+.week-btn:hover { background: var(--gray-700); color: #fff; }
+
+/* ── CONTENT GRID ────────────────────────────────── */
+.content { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 104px); }
+
+/* ── SIDEBAR ─────────────────────────────────────── */
+.sidebar {
+  background: var(--gray-950); border-right: 1px solid var(--gray-700);
+  padding: 24px 18px; display: flex; flex-direction: column;
+  position: sticky; top: 104px; height: calc(100vh - 104px); overflow-y: auto;
+}
+.sidebar-section { margin-bottom: 22px; }
+.sidebar-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--gray-400); margin-bottom: 12px; padding-bottom: 7px; border-bottom: 1px solid var(--gray-700);
+}
+.ctrl-row { margin-bottom: 13px; }
+.ctrl-row label { display: flex; justify-content: space-between; font-size: 11px; color: var(--gray-300); margin-bottom: 6px; }
+.ctrl-row label span { font-family: var(--mono); color: var(--yellow); font-size: 11px; }
+.ctrl-row input[type=range] { width: 100%; appearance: none; height: 2px; background: var(--gray-700); border-radius: 1px; outline: none; cursor: pointer; }
+.ctrl-row input[type=range]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: var(--yellow); border-radius: 50%; cursor: pointer; }
+#proj-sales::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: var(--yellow); border-radius: 50%; cursor: pointer; }
+.host-days { font-family: var(--mono); font-size: 10px; color: var(--gray-400); line-height: 1.9; }
+.host-days span { color: var(--yellow-d); }
+
+/* ── MOBILE DRAWER ───────────────────────────────── */
+.overlay { display: none; position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,0.75); }
+.drawer {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 160;
+  background: var(--gray-950); border-top: 1px solid var(--gray-700);
+  border-radius: 14px 14px 0 0; padding: 16px 20px 36px;
+  max-height: 78vh; overflow-y: auto;
+  transform: translateY(100%); transition: transform 0.28s ease;
+}
+.drawer.open { transform: translateY(0); }
+.drawer-handle { width: 36px; height: 4px; background: var(--gray-600); border-radius: 2px; margin: 0 auto 18px; }
+.drawer-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 18px; }
+.drawer-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+
+/* ── MAIN ────────────────────────────────────────── */
+.main { padding: 20px 18px; min-width: 0; }
+
+/* ── SECTION HEADER ──────────────────────────────── */
+.section-hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.section-hdr-title { font-size: 11px; font-weight: 600; color: #fff; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.section-hdr-line { flex: 1; height: 1px; background: var(--gray-700); }
+
+.section-hdr.collapsible { cursor: pointer; user-select: none; }
+.section-hdr.collapsible:hover .section-hdr-title { color: var(--yellow); }
+.chevron { font-size: 10px; color: var(--gray-400); transition: transform 0.2s; flex-shrink: 0; }
+.section-hdr.collapsed .chevron { transform: rotate(-90deg); }
+.collapsible-body { transition: none; }
+.collapsible-body.collapsed { display: none; }
+.chart-legend { display: flex; gap: 14px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 9px; color: var(--gray-400); white-space: nowrap; }
+.legend-dot { width: 7px; height: 7px; border-radius: 1px; flex-shrink: 0; }
+
+/* ── COVERS GRID ─────────────────────────────────── */
+.covers-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 24px; }
+.day-card {
+  background: var(--gray-900); border: 1px solid var(--gray-700); border-radius: 8px;
+  padding: 10px 6px; text-align: center; transition: border-color 0.15s;
+}
+.day-card:focus-within { border-color: var(--yellow-d); }
+.day-card-name { font-family: var(--mono); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 6px; }
+.day-card input {
+  width: 100%; background: transparent; border: none; outline: none;
+  font-family: var(--mono); font-size: 18px; font-weight: 500;
+  color: #fff; text-align: center; appearance: textfield;
+}
+.day-card input::-webkit-inner-spin-button,
+.day-card input::-webkit-outer-spin-button { appearance: none; }
+.day-steppers { display: flex; justify-content: space-between; margin-top: 5px; gap: 3px; }
+.day-btn {
+  background: var(--gray-700); border: none; color: var(--gray-300);
+  flex: 1; height: 22px; border-radius: 4px; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: background 0.1s;
+}
+.day-btn:hover, .day-btn:active { background: var(--gray-600); color: #fff; }
+.day-tier { font-family: var(--mono); font-size: 8px; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 5px; }
+.tier-peak { color: var(--red); }
+.tier-mid  { color: var(--amber); }
+.tier-slow { color: var(--gray-400); }
+
+/* ── TABLE ───────────────────────────────────────── */
+.table-wrap { background: var(--gray-900); border: 1px solid var(--gray-700); border-radius: 8px; margin-bottom: 24px; overflow: hidden; }
+.sched-table { width: 100%; border-collapse: collapse; }
+.sched-table th { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400); padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--gray-700); background: var(--gray-950); white-space: nowrap; }
+.sched-table th.right { text-align: right; }
+.sched-table td { padding: 10px 14px; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+.sched-table tr:last-child td { border-bottom: none; }
+.sched-table tr:hover td { background: rgba(255,255,255,0.02); }
+.td-day { font-weight: 600; color: #fff; font-size: 12px; white-space: nowrap; }
+.td-covers { font-family: var(--mono); font-size: 12px; color: var(--gray-300); }
+.td-right { text-align: right; font-family: var(--mono); font-size: 12px; color: var(--gray-300); }
+.td-cost { text-align: right; font-family: var(--mono); font-size: 12px; font-weight: 500; color: #fff; }
+
+/* ── MOBILE CARDS ────────────────────────────────── */
+.sched-cards { display: none; margin-bottom: 24px; }
+.sched-card { background: var(--gray-900); border: 1px solid var(--gray-700); border-radius: 8px; padding: 14px 16px; margin-bottom: 8px; }
+.sched-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.sched-card-day { font-weight: 600; font-size: 14px; color: #fff; }
+.sched-card-cost { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--yellow); }
+.sched-card-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.sched-card-row:last-child { border-bottom: none; }
+.sck { color: var(--gray-400); }
+.scv { font-family: var(--mono); color: #d4d4d4; }
+
+/* ── BADGES ──────────────────────────────────────── */
+.badge { display: inline-block; font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; margin-left: 4px; border-radius: 4px; }
+.badge-peak { background: rgba(229,62,62,0.12); color: var(--red); }
+.badge-mid  { background: rgba(232,146,42,0.12); color: var(--amber); }
+.badge-slow { background: rgba(255,255,255,0.06); color: var(--gray-400); }
+.badge-yes  { background: var(--yellow-dim); color: var(--yellow-d); }
+
+/* ── SPLH BAR ────────────────────────────────────── */
+.splh-cell { display: flex; align-items: center; gap: 8px; }
+.splh-track { flex: 1; height: 3px; background: var(--gray-700); }
+.splh-fill { height: 100%; transition: width 0.3s; }
+.splh-label { font-family: var(--mono); font-size: 11px; white-space: nowrap; min-width: 50px; text-align: right; }
+
+/* ── CHART ───────────────────────────────────────── */
+.chart-card { background: var(--gray-900); border: 1px solid var(--gray-700); border-radius: 8px; padding: 18px; margin-bottom: 24px; }
+
+/* ── BREAKDOWN ───────────────────────────────────── */
+.breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+.breakdown-card { background: var(--gray-900); border: 1px solid var(--gray-700); border-radius: 8px; padding: 16px; }
+.breakdown-card-title { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 12px; }
+.breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 12px; }
+.breakdown-row:last-child { border-bottom: none; font-weight: 600; color: #fff; }
+.breakdown-key { color: var(--gray-300); }
+.breakdown-val { font-family: var(--mono); font-size: 12px; color: #fff; }
+
+/* ── FOOTER ──────────────────────────────────────── */
+.report-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; padding: 14px 0; border-top: 1px solid var(--gray-700); margin-top: 4px; }
+.footer-text  { font-family: var(--mono); font-size: 10px; color: var(--gray-400); }
+.footer-brand { font-family: var(--mono); font-size: 10px; color: var(--gray-600); }
+
+/* ── RESPONSIVE ──────────────────────────────────── */
+@media (max-width: 768px) {
+  html { font-size: 16px; }
+  .nav-divider, .nav-product, .nav-hide { display: none; }
+  .settings-toggle { display: flex; }
+  .sub-period { display: none; }
+  .content { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { padding: 14px 12px; }
+  .covers-grid { grid-template-columns: repeat(4, 1fr); }
+  .table-wrap { display: none; }
+  .sched-cards { display: block; }
+  .breakdown-grid { grid-template-columns: 1fr; }
+  .chart-card { padding: 12px; }
+}
+
+.back-btn {
+  display: none;
+  align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  color: var(--gray-300); font-family: var(--mono);
+  font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0; margin-right: 10px; text-decoration: none;
+}
+.back-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.back-btn:hover { color: #fff; }
+@media (max-width: 768px) { .back-btn { display: flex; } }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="back-btn" href="index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Home</a>
+<div class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><text x="14" y="20" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="15" fill="#000000">GT</text></svg>
+    </div>
+    <span class="nav-company">Game Theory</span>
+  </div>
+  <div class="nav-divider"></div>
+  <span class="nav-product">Labor Scheduler</span>
+  <div class="nav-right">
+    <span class="nav-tag nav-hide">SPLH Model</span>
+    <span class="nav-tag" id="nav-date"></span>
+    <button class="settings-toggle" onclick="openDrawer()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="sub-header">
+    <div class="sub-left">
+      <span class="sub-title">FOH Scheduling</span>
+      <span class="sub-period">Sales Per Labor Hour</span>
+    </div>
+    <div class="week-nav">
+      <button class="week-btn" onclick="shiftWeek(-1)">&#8249;</button>
+      <span class="nav-tag" id="week-tag">—</span>
+      <button class="week-btn" onclick="shiftWeek(1)">&#8250;</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Staffing Ratios</div>
+        <div class="ctrl-row"><label>Covers per server <span id="sv-ratio-out">27</span></label><input type="range" min="15" max="40" step="1" value="27" id="sv-ratio" oninput="recalc()"></div>
+        <div class="ctrl-row"><label>Shift length (hrs) <span id="shift-hrs-out">7.0</span></label><input type="range" min="4" max="10" step="0.5" value="7" id="shift-hrs" oninput="recalc()"></div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Wages</div>
+        <div class="ctrl-row"><label>Server (tipped) <span id="sv-wage-out">$2.13</span></label><input type="range" min="2.13" max="15" step="0.12" value="2.13" id="sv-wage" oninput="recalc()"></div>
+        <div class="ctrl-row"><label>Bartender <span id="bar-wage-out">$2.15</span></label><input type="range" min="2.13" max="20" step="0.12" value="2.15" id="bar-wage" oninput="recalc()"></div>
+        <div class="ctrl-row"><label>Host <span id="host-wage-out">$10.00</span></label><input type="range" min="8" max="18" step="0.25" value="10" id="host-wage" oninput="recalc()"></div>
+        <div class="ctrl-row"><label>Avg check / guest <span id="avg-check-out">$16</span></label><input type="range" min="10" max="30" step="1" value="16" id="avg-check" oninput="recalc()"></div>
+        <div class="ctrl-row"><label>Payroll burden <span id="burden-out">15%</span></label><input type="range" min="10" max="35" step="1" value="15" id="burden" oninput="recalc()"></div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Host Schedule</div>
+        <div class="host-days"><span>TUE</span> · <span>THU</span> · <span>FRI</span> · <span>SAT</span> · <span>SUN</span><br><span style="color:var(--gray-600);font-size:9px;">Mon &amp; Wed — no host</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="section-hdr"><span class="section-hdr-title">Expected Covers</span><div class="section-hdr-line"></div></div>
+      <div class="covers-grid">
+        <div class="day-card"><div class="day-card-name">Sun</div><input type="number" id="d-sun" value="85" min="0" oninput="recalc()"><div class="day-steppers"><button class="day-btn" onclick="step('d-sun',-5)">−</button><button class="day-btn" onclick="step('d-sun',5)">+</button></div><div class="day-tier" id="t-sun"></div></div>
+        <div class="day-card"><div class="day-card-name">Mon</div><input type="number" id="d-mon" value="28" min="0" oninput="recalc()"><div class="day-steppers"><button class="day-btn" onclick="step('d-mon',-5)">−</button><button class="day-btn" onclick="step('d-mon',5)">+</button></div><div class="day-tier" id="t-mon"></div></div>
+        <div class="day-card"><div class="day-card-name">Tue</div><input type="number" id="d-tue" value="25" min="0" oninput="recalc()"><div class="day-steppers"><button class="day-btn" onclick="step('d-tue',-5)">−</button><button class="day-btn" onclick="step('d-tue',5)">+</button></div><div class="day-tier" id="t-tue"></div></div>
+        <div class="day-card"><div class="day-card-name">Wed</div><input type="number" id="d-wed" value="34" min="0" oninput="recalc()"><div class="day-steppers"><button class="day-btn" onclick="step('d-wed',-5)">−</button><button class="day-btn" onclick="step('d-wed',5)">+</button></div><div class="day-tier" id="t-wed"></div></div>
+        <div class="day-card"><div class="day-card-name">Thu</div><input type="number" id="d-thu" value="50" min="0" oninput="recalc()"><div class="day-steppers"><button class="day-btn" onclick="step('d-thu',-5)">−</button><button class="day-btn" onclick="step('d-thu',5)">+</button></div><div class="day-tier" id="t-thu"></div></div>
+        <div class="day-card"><div class="day-card-name">Fri</div><input type="number" id="d-fri" value="175" min="0" oninput="recalc()"><div class="day-steppers"><button class="day-btn" onclick="step('d-fri',-5)">−</button><button class="day-btn" onclick="step('d-fri',5)">+</button></div><div class="day-tier" id="t-fri"></div></div>
+        <div class="day-card"><div class="day-card-name">Sat</div><input type="number" id="d-sat" value="240" min="0" oninput="recalc()"><div class="day-steppers"><button class="day-btn" onclick="step('d-sat',-5)">−</button><button class="day-btn" onclick="step('d-sat',5)">+</button></div><div class="day-tier" id="t-sat"></div></div>
+      </div>
+
+      <div class="section-hdr collapsible" id="hdr-staffing" onclick="toggleSection('staffing')"><span class="section-hdr-title">Staffing Recommendation</span><div class="section-hdr-line"></div><span class="chevron">▼</span></div>
+      <div class="collapsible-body" id="body-staffing">
+      <div class="table-wrap">
+        <table class="sched-table">
+          <thead><tr><th>Day</th><th>Covers</th><th>Servers</th><th>Bar</th><th>Host</th><th>Hrs</th><th>SPLH</th><th class="right">Est. cost</th></tr></thead>
+          <tbody id="sched-body"></tbody>
+          <tfoot id="sched-foot"></tfoot>
+        </table>
+      </div>
+      <div class="sched-cards" id="sched-cards"></div>
+      </div>
+
+      <div class="section-hdr collapsible" id="hdr-splh" onclick="toggleSection('splh')"><span class="section-hdr-title">SPLH by Day</span><div class="section-hdr-line"></div><div class="chart-legend"><div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>SPLH</div><div class="legend-item"><div class="legend-dot" style="background:var(--gray-600)"></div>Target $50</div></div><span class="chevron">▼</span></div>
+      <div class="collapsible-body" id="body-splh">
+      <div class="chart-card"><div style="position:relative;height:160px;"><canvas id="splh-chart"></canvas></div></div>
+      </div>
+
+      <div class="section-hdr collapsible" id="hdr-breakdown" onclick="toggleSection('breakdown')"><span class="section-hdr-title">Cost Breakdown</span><div class="section-hdr-line"></div><span class="chevron">▼</span></div>
+      <div class="collapsible-body" id="body-breakdown">
+      <div class="breakdown-grid">
+        <div class="breakdown-card">
+          <div class="breakdown-card-title">Weekly Labor Detail</div>
+          <div class="breakdown-row"><span class="breakdown-key">Total weekly guests</span><span class="breakdown-val" id="b-guests">—</span></div>
+          <div class="breakdown-row"><span class="breakdown-key">Server wages</span><span class="breakdown-val" id="b-sv">—</span></div>
+          <div class="breakdown-row"><span class="breakdown-key">Bartender wages</span><span class="breakdown-val" id="b-bar">—</span></div>
+          <div class="breakdown-row"><span class="breakdown-key">Host wages</span><span class="breakdown-val" id="b-host">—</span></div>
+          <div class="breakdown-row"><span class="breakdown-key">Payroll burden</span><span class="breakdown-val" id="b-burden">—</span></div>
+          <div class="breakdown-row"><span class="breakdown-key">Total FOH labor</span><span class="breakdown-val" id="b-total">—</span></div>
+        </div>
+        <div class="breakdown-card">
+          <div class="breakdown-card-title">Sales Projection</div>
+          <div class="breakdown-row">
+            <span class="breakdown-key" id="labor-pct-label">Labor %</span>
+            <span class="breakdown-val" style="color:var(--green)">22%</span>
+          </div>
+          <div class="breakdown-row" style="flex-direction:column;align-items:flex-start;gap:8px;padding-bottom:10px;">
+            <span class="breakdown-key">Projected weekly sales</span>
+            <div style="display:flex;align-items:center;gap:8px;width:100%;">
+              <input type="range" min="5000" max="30000" step="250" value="14469" id="proj-sales" oninput="recalc()" style="flex:1;appearance:none;height:2px;background:var(--gray-700);border-radius:1px;outline:none;cursor:pointer;">
+              <span style="font-family:var(--mono);font-size:12px;color:var(--yellow);min-width:60px;text-align:right;" id="proj-sales-out">$14,469</span>
+            </div>
+          </div>
+          <div class="breakdown-row" style="flex-direction:column;align-items:flex-start;gap:8px;padding-bottom:10px;">
+            <span class="breakdown-key">FOH labor target %</span>
+            <div style="display:flex;align-items:center;gap:8px;width:100%;">
+              <input type="range" min="5" max="40" step="1" value="12" id="labor-target" oninput="recalc()" style="flex:1;appearance:none;height:2px;background:var(--gray-700);border-radius:1px;outline:none;cursor:pointer;">
+              <span style="font-family:var(--mono);font-size:12px;color:var(--yellow);min-width:36px;text-align:right;" id="labor-target-out">12%</span>
+            </div>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-key">FOH labor % (proj.)</span>
+            <span class="breakdown-val" id="b-pct">—</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-key">$ over / under target</span>
+            <span class="breakdown-val" id="b-delta">—</span>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div class="report-footer">
+        <span class="footer-text" id="footer-text"></span>
+        <span class="footer-brand">Game Theory · Labor Intelligence</span>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- MOBILE DRAWER -->
+<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">Model Settings</div>
+  <div class="drawer-cols">
+    <div class="ctrl-row"><label>Covers / server <span id="m-sv-ratio-out">27</span></label><input type="range" min="15" max="40" step="1" value="27" id="m-sv-ratio" oninput="sync('sv-ratio','m-sv-ratio')"></div>
+    <div class="ctrl-row"><label>Shift hrs <span id="m-shift-hrs-out">7.0</span></label><input type="range" min="4" max="10" step="0.5" value="7" id="m-shift-hrs" oninput="sync('shift-hrs','m-shift-hrs')"></div>
+    <div class="ctrl-row"><label>Server wage <span id="m-sv-wage-out">$2.13</span></label><input type="range" min="2.13" max="15" step="0.12" value="2.13" id="m-sv-wage" oninput="sync('sv-wage','m-sv-wage')"></div>
+    <div class="ctrl-row"><label>Bartender <span id="m-bar-wage-out">$2.15</span></label><input type="range" min="2.13" max="20" step="0.12" value="2.15" id="m-bar-wage" oninput="sync('bar-wage','m-bar-wage')"></div>
+    <div class="ctrl-row"><label>Host wage <span id="m-host-wage-out">$10.00</span></label><input type="range" min="8" max="18" step="0.25" value="10" id="m-host-wage" oninput="sync('host-wage','m-host-wage')"></div>
+    <div class="ctrl-row"><label>Avg check <span id="m-avg-check-out">$16</span></label><input type="range" min="10" max="30" step="1" value="16" id="m-avg-check" oninput="sync('avg-check','m-avg-check')"></div>
+    <div class="ctrl-row"><label>Payroll burden <span id="m-burden-out">15%</span></label><input type="range" min="10" max="35" step="1" value="15" id="m-burden" oninput="sync('burden','m-burden')"></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const DAYS     = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAY_IDS  = ['d-sun','d-mon','d-tue','d-wed','d-thu','d-fri','d-sat'];
+const TIER_IDS = ['t-sun','t-mon','t-tue','t-wed','t-thu','t-fri','t-sat'];
+const HOST_DAYS = new Set(['Sunday','Tuesday','Thursday','Friday','Saturday']);
+const BAR_MIN = 50, WEEKLY_REV = 14469;
+let chartInst = null;
+
+function tier(c) {
+  if (c >= 120) return { label:'peak', cls:'tier-peak' };
+  if (c >= 50)  return { label:'mid',  cls:'tier-mid'  };
+  return               { label:'slow', cls:'tier-slow' };
+}
+function splhColor(v) { return v >= 60 ? '#38a169' : v >= 35 ? '#e8922a' : '#e53e3e'; }
+function fmt$(n) { return '$' + Math.round(n).toLocaleString(); }
+
+function toggleSection(id) {
+  if (window.innerWidth > 768) return;
+  const hdr  = document.getElementById('hdr-' + id);
+  const body = document.getElementById('body-' + id);
+  const open = !hdr.classList.contains('collapsed');
+  hdr.classList.toggle('collapsed', open);
+  body.classList.toggle('collapsed', open);
+}
+
+function initCollapsibles() {
+  if (window.innerWidth <= 768) {
+    ['staffing','splh','breakdown'].forEach(id => {
+      document.getElementById('hdr-' + id).classList.add('collapsed');
+      document.getElementById('body-' + id).classList.add('collapsed');
+    });
+  } else {
+    ['staffing','splh','breakdown'].forEach(id => {
+      document.getElementById('hdr-' + id).classList.remove('collapsed');
+      document.getElementById('body-' + id).classList.remove('collapsed');
+    });
+  }
+}
+
+window.addEventListener('resize', initCollapsibles);
+
+function openDrawer()  { $('overlay').style.display='block'; $('drawer').classList.add('open'); }
+function closeDrawer() { $('overlay').style.display='none';  $('drawer').classList.remove('open'); }
+function sync(deskId, mobId) { $(deskId).value = $(mobId).value; recalc(); }
+
+function recalc() {
+  const svRatio  = +$('sv-ratio').value;
+  const shiftHrs = +$('shift-hrs').value;
+  const svWage   = +$('sv-wage').value;
+  const barWage  = +$('bar-wage').value;
+  const hostWage = +$('host-wage').value;
+  const avgCheck = +$('avg-check').value;
+  const burden   = +$('burden').value / 100;
+
+  const setOut = (id, v) => { const el=$(id+'-out'); if(el) el.textContent=v; };
+  setOut('sv-ratio',  svRatio);         setOut('m-sv-ratio',  svRatio);
+  setOut('shift-hrs', shiftHrs.toFixed(1)); setOut('m-shift-hrs', shiftHrs.toFixed(1));
+  setOut('sv-wage',   '$'+svWage.toFixed(2));  setOut('m-sv-wage',   '$'+svWage.toFixed(2));
+  setOut('bar-wage',  '$'+barWage.toFixed(2)); setOut('m-bar-wage',  '$'+barWage.toFixed(2));
+  setOut('host-wage', '$'+hostWage.toFixed(2));setOut('m-host-wage', '$'+hostWage.toFixed(2));
+  setOut('avg-check', '$'+avgCheck);    setOut('m-avg-check', '$'+avgCheck);
+  setOut('burden',    Math.round(burden*100)+'%'); setOut('m-burden', Math.round(burden*100)+'%');
+
+  const projSales = +$('proj-sales').value;
+  $('proj-sales-out').textContent = '$' + Math.round(projSales).toLocaleString();
+
+  let totalCovers=0, totalHrs=0, totalSv=0, totalBar=0, totalHost=0;
+  const splhValues=[];
+  let bodyHTML='', cardsHTML='';
+
+  DAYS.forEach((day, i) => {
+    const covers = Math.max(0, parseInt($(DAY_IDS[i]).value)||0);
+    const t = tier(covers);
+    const te = $(TIER_IDS[i]); te.textContent=t.label; te.className='day-tier '+t.cls;
+
+    const servers  = Math.max(1, Math.ceil(covers/svRatio));
+    const hasBar   = covers >= BAR_MIN ? 1 : 0;
+    const hasHost  = HOST_DAYS.has(day) ? 1 : 0;
+    const dayHrs   = (servers+hasBar+hasHost)*shiftHrs;
+    const estSales = covers*avgCheck;
+    const splh     = dayHrs>0 ? Math.round(estSales/dayHrs) : 0;
+    const splhPct  = Math.min((splh/100)*100, 100);
+    const sc       = splhColor(splh);
+    const svCost   = servers*shiftHrs*svWage;
+    const barCost  = hasBar*shiftHrs*barWage;
+    const hostCost = hasHost*shiftHrs*hostWage;
+    const dayCost  = (svCost+barCost+hostCost)*(1+burden);
+
+    totalCovers+=covers; totalHrs+=dayHrs; totalSv+=svCost; totalBar+=barCost; totalHost+=hostCost;
+    splhValues.push(splh);
+
+    const tb   = `<span class="badge badge-${t.label}">${t.label}</span>`;
+    const barB = hasBar  ? `<span class="badge badge-yes">1</span>` : `<span style="font-family:var(--mono);font-size:11px;color:var(--gray-700);">—</span>`;
+    const hstB = hasHost ? `<span class="badge badge-yes">1</span>` : `<span style="font-family:var(--mono);font-size:11px;color:var(--gray-700);">—</span>`;
+
+    bodyHTML += `<tr>
+      <td class="td-day">${day}</td>
+      <td><span class="td-covers">${covers}</span>${tb}</td>
+      <td class="td-right">${servers}</td>
+      <td>${barB}</td><td>${hstB}</td>
+      <td class="td-right">${Math.round(dayHrs)}</td>
+      <td><div class="splh-cell"><div class="splh-track"><div class="splh-fill" style="width:${splhPct}%;background:${sc}"></div></div><span class="splh-label" style="color:${sc}">$${splh}/hr</span></div></td>
+      <td class="td-cost">${fmt$(dayCost)}</td>
+    </tr>`;
+
+    cardsHTML += `<div class="sched-card">
+      <div class="sched-card-top"><span class="sched-card-day">${day}${tb}</span><span class="sched-card-cost">${fmt$(dayCost)}</span></div>
+      <div class="sched-card-row"><span class="sck">Covers</span><span class="scv">${covers}</span></div>
+      <div class="sched-card-row"><span class="sck">Servers</span><span class="scv">${servers}</span></div>
+      <div class="sched-card-row"><span class="sck">Bar · Host</span><span class="scv">${hasBar?'1':'—'} · ${hasHost?'1':'—'}</span></div>
+      <div class="sched-card-row"><span class="sck">Total hours</span><span class="scv">${Math.round(dayHrs)}</span></div>
+      <div class="sched-card-row"><span class="sck">SPLH</span><span class="scv" style="color:${sc}">$${splh}/hr</span></div>
+    </div>`;
+  });
+
+  $('sched-body').innerHTML = bodyHTML;
+  $('sched-cards').innerHTML = cardsHTML;
+
+  const burdenAmt = (totalSv+totalBar+totalHost)*burden;
+  const totalCost = (totalSv+totalBar+totalHost)*(1+burden);
+  const avgSplh   = totalHrs>0 ? Math.round((totalCovers*avgCheck)/totalHrs) : 0;
+  const laborPct  = ((totalCost/projSales)*100).toFixed(1);
+  const lc        = parseFloat(laborPct)>35 ? 'var(--red)' : parseFloat(laborPct)>28 ? 'var(--amber)' : 'var(--green)';
+  const targetPct = +$('labor-target').value / 100;
+  $('labor-target-out').textContent = Math.round(targetPct * 100) + '%';
+  const targetLabor = projSales * targetPct;
+  const delta = totalCost - targetLabor;
+  const deltaColor = delta > 0 ? 'var(--red)' : 'var(--green)';
+  const deltaText = (delta > 0 ? '+' : '') + fmt$(delta);
+
+  $('sched-foot').innerHTML = `<tr style="background:var(--gray-800);">
+    <td class="td-day" style="color:var(--yellow);">Total</td>
+    <td class="td-covers" style="font-family:var(--mono);font-size:12px;">${totalCovers}</td>
+    <td colspan="3"></td>
+    <td class="td-right" style="color:#fff;font-weight:600;">${Math.round(totalHrs)}</td>
+    <td><span style="font-family:var(--mono);font-size:11px;color:${splhColor(avgSplh)};">$${avgSplh}/hr</span></td>
+    <td class="td-cost" style="color:var(--yellow);">${fmt$(totalCost)}</td>
+  </tr>`;
+
+  $('b-sv').textContent     = fmt$(totalSv);
+  $('b-guests').textContent = totalCovers.toLocaleString();
+  $('b-bar').textContent    = fmt$(totalBar);
+  $('b-host').textContent   = fmt$(totalHost);
+  $('b-burden').textContent = fmt$(burdenAmt);
+  $('b-total').textContent  = fmt$(totalCost);
+  $('b-pct').textContent    = laborPct+'%';
+  $('b-pct').style.color    = lc;
+  $('b-delta').textContent  = deltaText;
+  $('b-delta').style.color  = deltaColor;
+
+  if (chartInst) { chartInst.destroy(); chartInst=null; }
+  chartInst = new Chart($('splh-chart'), {
+    type:'bar',
+    data:{ labels:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+      datasets:[
+        { data:splhValues, backgroundColor:splhValues.map(v=>splhColor(v)+'99'), borderColor:splhValues.map(v=>splhColor(v)), borderWidth:1 },
+        { data:Array(7).fill(50), type:'line', borderColor:'#3a3a3a', borderWidth:1, borderDash:[4,4], pointRadius:0, fill:false }
+      ]
+    },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1a1a1a', borderColor:'#2a2a2a', borderWidth:1, titleColor:'#666', bodyColor:'#d4d4d4', titleFont:{family:'IBM Plex Mono',size:10}, bodyFont:{family:'IBM Plex Mono',size:11}, padding:10, callbacks:{label:ctx=>` $${ctx.parsed.y}/hr`} } },
+      scales:{ y:{min:0,ticks:{callback:v=>'$'+v,color:'#444',font:{family:'IBM Plex Mono',size:10}},grid:{color:'#1a1a1a'},border:{display:false}}, x:{ticks:{color:'#444',font:{family:'IBM Plex Mono',size:10}},grid:{display:false},border:{display:false}} }
+    }
+  });
+
+  $('footer-text').textContent = `${totalCovers} covers · ${Math.round(totalHrs)} hrs · ${laborPct}% FOH labor`;
+}
+
+const now = new Date(); let weekOffset = 0;
+const fmtD = d => d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+function updateWeekTag() {
+  const base = new Date(now);
+  base.setDate(now.getDate()-now.getDay()+weekOffset*7);
+  const end = new Date(base); end.setDate(base.getDate()+6);
+  $('week-tag').textContent = `${fmtD(base)} – ${fmtD(end)}`;
+  $('nav-date').textContent = base.toLocaleDateString('en-US',{month:'short',year:'numeric'}).toUpperCase();
+  const monthName = base.toLocaleDateString('en-US',{month:'long'});
+  const labelEl = $('labor-pct-label');
+  if (labelEl) labelEl.textContent = monthName + ' labor %';
+}
+function shiftWeek(dir) { weekOffset+=dir; updateWeekTag(); }
+updateWeekTag(); recalc(); initCollapsibles();
+</script>
+</body>
+</html>
