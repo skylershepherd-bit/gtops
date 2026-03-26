@@ -5,6 +5,8 @@ const FILES = [
   '/labor.html',
   '/tasks.html',
   '/inventory.html',
+  '/coverage.html',
+  '/widget.js',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
