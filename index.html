@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="GT Ops">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>GT Ops</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black:    #000000;
+  --gray-950: #0a0a0a;
+  --gray-900: #111111;
+  --gray-800: #1a1a1a;
+  --gray-700: #2a2a2a;
+  --gray-600: #3a3a3a;
+  --gray-400: #666666;
+  --gray-300: #888888;
+  --yellow:   #f5e014;
+  --yellow-d: #c9b800;
+  --sans: 'Inter', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+html { font-size: 14px; }
+body {
+  background: var(--black); color: #d4d4d4;
+  font-family: var(--sans); min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+.topnav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 52px; background: var(--gray-950);
+  border-bottom: 1px solid var(--gray-700);
+  display: flex; align-items: center; padding: 0 20px;
+}
+.nav-logo { display: flex; align-items: center; gap: 10px; }
+.nav-logo-mark {
+  width: 28px; height: 28px; background: var(--yellow);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+}
+.nav-logo-mark svg { width: 16px; height: 16px; fill: var(--black); }
+.nav-name { font-size: 14px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #fff; }
+.nav-right { margin-left: auto; }
+.nav-tag {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gray-400); background: var(--gray-800);
+  border: 1px solid var(--gray-700); border-radius: 4px; padding: 3px 10px;
+}
+
+/* PAGE */
+.page { padding-top: 52px; min-height: 100vh; }
+
+/* HERO */
+.hero {
+  padding: 48px 24px 40px;
+  border-bottom: 1px solid var(--gray-700);
+  background: var(--gray-950);
+}
+.hero-kicker {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--yellow); margin-bottom: 12px;
+}
+.hero-title {
+  font-size: clamp(24px, 5vw, 36px); font-weight: 700;
+  color: #fff; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 8px;
+}
+.hero-sub { font-size: 13px; color: var(--gray-400); max-width: 380px; }
+
+/* TOOLS GRID */
+.tools-section { padding: 32px 20px; }
+.tools-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--gray-400);
+  margin-bottom: 16px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--gray-700);
+}
+.tools-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+.tool-card {
+  background: var(--gray-900); border: 1px solid var(--gray-700);
+  border-radius: 10px; padding: 20px 18px;
+  text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: 0;
+  position: relative; overflow: hidden;
+  transition: border-color 0.15s, background 0.15s;
+  cursor: pointer;
+}
+.tool-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--gray-700); transition: background 0.15s;
+}
+.tool-card:hover { background: var(--gray-800); border-color: var(--gray-600); }
+.tool-card:hover::before { background: var(--yellow); }
+.tool-card.available:hover::before { background: var(--yellow); }
+.tool-card.coming-soon { opacity: 0.5; cursor: default; }
+.tool-card.coming-soon:hover { background: var(--gray-900); border-color: var(--gray-700); }
+.tool-card.coming-soon:hover::before { background: var(--gray-700); }
+
+.tool-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--gray-800); border: 1px solid var(--gray-700);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+}
+.tool-icon svg { width: 18px; height: 18px; fill: none; stroke: var(--yellow); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.tool-icon svg.filled { fill: var(--yellow); stroke: none; }
+.tool-name { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 5px; }
+.tool-desc { font-size: 11px; color: var(--gray-400); line-height: 1.5; margin-bottom: 14px; flex: 1; }
+.tool-footer { display: flex; align-items: center; justify-content: space-between; }
+.tool-status {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 4px;
+}
+.status-live { background: rgba(56,161,105,0.12); color: #38a169; }
+.status-soon { background: rgba(255,255,255,0.05); color: var(--gray-400); }
+.tool-arrow { font-size: 16px; color: var(--gray-600); }
+.tool-card.available .tool-arrow { color: var(--yellow-d); }
+
+/* INSTALL BANNER */
+.install-banner {
+  margin: 0 20px 24px;
+  background: var(--gray-900); border: 1px solid var(--gray-700);
+  border-radius: 10px; padding: 16px 18px;
+  display: flex; align-items: center; gap: 14px;
+}
+.install-icon {
+  width: 36px; height: 36px; flex-shrink: 0;
+  background: var(--yellow-dim, rgba(245,224,20,0.08));
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+}
+.install-icon svg { width: 18px; height: 18px; stroke: var(--yellow); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.install-text { flex: 1; }
+.install-title { font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 2px; }
+.install-sub { font-size: 11px; color: var(--gray-400); line-height: 1.4; }
+.install-btn {
+  background: var(--yellow); color: var(--black);
+  border: none; border-radius: 6px; padding: 7px 14px;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+.install-btn:hover { opacity: 0.85; }
+
+/* FOOTER */
+.platform-footer {
+  padding: 20px; border-top: 1px solid var(--gray-700); margin-top: 8px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.pf-text { font-family: var(--mono); font-size: 10px; color: var(--gray-600); }
+
+@media (max-width: 480px) {
+  .tools-grid { grid-template-columns: 1fr; }
+  .hero { padding: 32px 16px 28px; }
+  .tools-section { padding: 24px 14px; }
+  .install-banner { margin: 0 14px 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 16 16"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z"/></svg>
+    </div>
+    <span class="nav-name">GT Ops</span>
+  </div>
+  <div class="nav-right">
+    <span class="nav-tag" id="nav-date"></span>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="hero">
+    <div class="hero-kicker">Operations Platform</div>
+    <div class="hero-title">Game Theory<br>Intelligence Suite</div>
+    <div class="hero-sub">Scheduling, reporting, and analytics tools built for your operation.</div>
+  </div>
+
+  <div class="tools-section">
+    <div class="tools-label">Tools</div>
+    <div class="tools-grid">
+
+      <a class="tool-card available" href="labor.html">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="tool-name">Labor Scheduler</div>
+        <div class="tool-desc">SPLH-based FOH staffing by daily guest count. Projects labor cost and efficiency.</div>
+        <div class="tool-footer">
+          <span class="tool-status status-live">Live</span>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+      <a class="tool-card available" href="tasks.html">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <div class="tool-name">Task Report</div>
+        <div class="tool-desc">FOH &amp; BOH task completion tracking. Upload CSV data to generate weekly reports.</div>
+        <div class="tool-footer">
+          <span class="tool-status status-live">Live</span>
+          <span class="tool-arrow">→</span>
+        </div>
+      </a>
+
+      <div class="tool-card coming-soon">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="tool-name">Sales Dashboard</div>
+        <div class="tool-desc">Daily and weekly revenue tracking, trends, and projections against targets.</div>
+        <div class="tool-footer">
+          <span class="tool-status status-soon">Coming soon</span>
+          <span class="tool-arrow">—</span>
+        </div>
+      </div>
+
+      <div class="tool-card coming-soon">
+        <div class="tool-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        </div>
+        <div class="tool-name">Inventory Tracker</div>
+        <div class="tool-desc">Stock levels, par counts, and variance reporting for food and beverage.</div>
+        <div class="tool-footer">
+          <span class="tool-status status-soon">Coming soon</span>
+          <span class="tool-arrow">—</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="install-banner" id="install-banner" style="display:none;">
+    <div class="install-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2v13"/><path d="M5 15l7 7 7-7"/><path d="M3 20h18"/></svg>
+    </div>
+    <div class="install-text">
+      <div class="install-title">Install GT Ops</div>
+      <div class="install-sub">Add to your home screen for quick access.</div>
+    </div>
+    <button class="install-btn" id="install-btn">Install</button>
+  </div>
+
+  <div class="platform-footer">
+    <span class="pf-text">GT Ops · v1.0</span>
+    <span class="pf-text">Game Theory</span>
+  </div>
+
+</div>
+
+<script>
+const now = new Date();
+document.getElementById('nav-date').textContent = now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toUpperCase();
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-banner').style.display = 'flex';
+});
+
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  if (outcome === 'accepted') document.getElementById('install-banner').style.display = 'none';
+});
+</script>
+</body>
+</html>

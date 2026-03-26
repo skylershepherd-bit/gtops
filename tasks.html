@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operations Intelligence — Task Completion Report</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black:   #000000;
+  --gray-950:#0a0a0a;
+  --gray-900:#111111;
+  --gray-800:#1a1a1a;
+  --gray-700:#2a2a2a;
+  --gray-600:#3a3a3a;
+  --gray-400:#666666;
+  --gray-300:#888888;
+  --yellow:  #f5e014;
+  --yellow-d:#c9b800;
+  --yellow-dim:rgba(245,224,20,0.08);
+  --red:     #e53e3e;
+  --amber:   #e8922a;
+  --green:   #38a169;
+  --sans: 'Inter', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+html { font-size: 14px; }
+
+body {
+  background: var(--black);
+  color: #d4d4d4;
+  font-family: var(--sans);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── TOP NAV ─────────────────────────────────────────────── */
+.topnav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 52px;
+  background: var(--gray-950);
+  border-bottom: 1px solid var(--gray-700);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  gap: 0;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 32px;
+}
+
+.nav-logo-mark {
+  width: 28px; height: 28px;
+  background: var(--yellow);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.nav-logo-mark svg {
+  width: 16px; height: 16px;
+  fill: var(--black);
+}
+
+.nav-company {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.nav-divider {
+  width: 1px; height: 20px;
+  background: var(--gray-700);
+  margin: 0 20px;
+}
+
+.nav-product {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--gray-300);
+  letter-spacing: 0.04em;
+}
+
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  background: var(--gray-800);
+  border: 1px solid var(--gray-700);
+  padding: 3px 10px;
+}
+
+/* ─── PAGE SHELL ──────────────────────────────────────────── */
+.page {
+  padding-top: 52px;
+  min-height: 100vh;
+}
+
+/* ─── UPLOAD SCREEN ───────────────────────────────────────── */
+#upload-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 52px);
+  padding: 48px 24px;
+  gap: 0;
+}
+
+.up-kicker {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--yellow);
+  margin-bottom: 20px;
+}
+
+.up-h1 {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  text-align: center;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+
+.up-sub {
+  font-size: 14px;
+  color: var(--gray-400);
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+#drop-zone {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: var(--gray-900);
+  border: 1px solid var(--gray-700);
+  padding: 52px 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  margin-bottom: 20px;
+}
+
+#drop-zone::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--yellow);
+}
+
+#drop-zone:hover, #drop-zone.over {
+  border-color: var(--yellow);
+  background: var(--gray-800);
+}
+
+#drop-zone input {
+  position: absolute; inset: 0;
+  opacity: 0; width: 100%; height: 100%; cursor: pointer;
+}
+
+.up-icon-wrap {
+  width: 44px; height: 44px;
+  margin: 0 auto 20px;
+  border: 1px solid var(--gray-600);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.up-icon-wrap svg {
+  width: 20px; height: 20px;
+  stroke: var(--yellow); fill: none;
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.up-label { font-size: 14px; font-weight: 600; color: #ffffff; margin-bottom: 6px; }
+.up-hint  { font-family: var(--mono); font-size: 11px; color: var(--gray-400); }
+
+.up-meta {
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+}
+
+.meta-pill {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gray-400);
+  border: 1px solid var(--gray-700);
+  padding: 4px 12px;
+}
+
+#error-msg {
+  display: none;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--red);
+  border: 1px solid #3a1515;
+  background: #1a0808;
+  padding: 10px 18px;
+  margin-top: 16px;
+}
+
+/* ─── REPORT SCREEN ───────────────────────────────────────── */
+#report-screen {
+  display: none;
+}
+
+/* Sub-header bar */
+.sub-header {
+  background: var(--gray-900);
+  border-bottom: 1px solid var(--gray-700);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sub-header-left {
+  display: flex; align-items: baseline; gap: 16px;
+}
+
+.sub-title {
+  font-size: 14px; font-weight: 600;
+  color: #ffffff; letter-spacing: -0.01em;
+}
+
+.sub-period {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--gray-400);
+}
+
+.sub-header-right {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.upload-new-btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray-300);
+  background: transparent;
+  border: 1px solid var(--gray-600);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.upload-new-btn:hover {
+  color: var(--yellow);
+  border-color: var(--yellow);
+}
+
+/* Content area */
+.content {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 28px 80px;
+}
+
+/* ─── SECTION LABEL ───────────────────────────────────────── */
+.section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  margin-bottom: 12px;
+  padding-left: 2px;
+  border-left: 2px solid var(--yellow);
+  padding-left: 10px;
+}
+
+/* ─── KPI CARDS ───────────────────────────────────────────── */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--gray-700);
+  border: 1px solid var(--gray-700);
+  margin-bottom: 24px;
+}
+
+@media (max-width: 560px) {
+  .kpis { grid-template-columns: 1fr; }
+}
+
+.kpi {
+  background: var(--gray-900);
+  padding: 24px 24px 20px;
+  position: relative;
+}
+
+.kpi::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: transparent;
+}
+
+.kpi.foh::after { background: var(--yellow); }
+.kpi.boh::after { background: var(--yellow-d); }
+.kpi.total::after { background: var(--gray-600); }
+
+.kpi-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  margin-bottom: 12px;
+}
+
+.kpi-val {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.kpi.foh .kpi-val { color: var(--yellow); }
+.kpi.boh .kpi-val { color: var(--yellow-d); }
+
+.kpi-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--gray-400);
+}
+
+/* ─── ALERTS ──────────────────────────────────────────────── */
+.alerts {
+  display: flex; flex-direction: column; gap: 1px;
+  background: var(--gray-700);
+  border: 1px solid var(--gray-700);
+  margin-bottom: 24px;
+}
+
+.alert {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 14px 18px;
+  font-size: 13px;
+  background: var(--gray-900);
+}
+
+.alert-stripe {
+  width: 3px; flex-shrink: 0; align-self: stretch;
+}
+
+.alert.ok     .alert-stripe { background: var(--green); }
+.alert.warn   .alert-stripe { background: var(--amber); }
+.alert.danger .alert-stripe { background: var(--red); }
+
+.alert-icon {
+  flex-shrink: 0;
+  font-size: 13px;
+  margin-top: 1px;
+}
+
+.alert.ok     .alert-icon { color: var(--green); }
+.alert.warn   .alert-icon { color: var(--amber); }
+.alert.danger .alert-icon { color: var(--red); }
+
+.alert-body { color: #c4c4c4; }
+.alert-body strong { color: #ffffff; font-weight: 600; }
+
+/* ─── CHART ───────────────────────────────────────────────── */
+.chart-panel {
+  background: var(--gray-900);
+  border: 1px solid var(--gray-700);
+  margin-bottom: 24px;
+}
+
+.chart-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-800);
+}
+
+.chart-label {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--gray-400);
+}
+
+.chart-legend {
+  display: flex; gap: 20px;
+}
+
+.leg {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gray-400);
+}
+
+.leg-line {
+  width: 16px; height: 2px;
+}
+
+.chart-body {
+  padding: 20px 20px 16px;
+  position: relative; height: 200px;
+}
+
+/* ─── TABS ────────────────────────────────────────────────── */
+.tab-row {
+  display: flex;
+  border-bottom: 1px solid var(--gray-700);
+  margin-bottom: 16px;
+}
+
+.tab {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-400);
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.15s;
+}
+
+.tab:hover { color: #d4d4d4; }
+
+.tab.active {
+  color: var(--yellow);
+  border-bottom-color: var(--yellow);
+}
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ─── TABLE ───────────────────────────────────────────────── */
+.tbl-wrap {
+  background: var(--gray-900);
+  border: 1px solid var(--gray-700);
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+thead tr {
+  background: var(--gray-800);
+  border-bottom: 1px solid var(--gray-700);
+}
+
+thead th {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  text-align: left;
+  padding: 11px 16px;
+  font-weight: 400;
+}
+
+tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gray-800);
+  vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--gray-800); }
+
+.date-cell {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--gray-400); white-space: nowrap;
+  min-width: 72px;
+}
+
+.bar-row { display: flex; align-items: center; gap: 12px; }
+.bar-bg  {
+  flex: 1; height: 4px;
+  background: var(--gray-700);
+  min-width: 60px;
+}
+.bar-fill { height: 100%; }
+.bar-pct  {
+  font-family: var(--mono); font-size: 12px;
+  font-weight: 500; min-width: 42px; text-align: right;
+}
+.bar-ct {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--gray-400); min-width: 46px;
+}
+
+/* ─── TASK LISTS ──────────────────────────────────────────── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--gray-700);
+  border: 1px solid var(--gray-700);
+}
+
+@media (max-width: 580px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+
+.list-panel {
+  background: var(--gray-900);
+  padding: 20px;
+}
+
+.list-panel-head {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--gray-700);
+}
+
+.list-panel-head.foh { color: var(--yellow); }
+.list-panel-head.boh { color: var(--yellow-d); }
+
+.tl-row {
+  display: flex; align-items: center;
+  gap: 10px; margin-bottom: 11px;
+}
+.tl-row:last-child { margin-bottom: 0; }
+
+.tl-name {
+  flex: 1; font-size: 12px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: #c4c4c4;
+}
+
+.tl-bar-bg { width: 52px; height: 3px; background: var(--gray-700); flex-shrink: 0; }
+.tl-bar-fill { height: 100%; }
+.tl-pct {
+  font-family: var(--mono); font-size: 11px;
+  min-width: 34px; text-align: right;
+  font-weight: 500; flex-shrink: 0;
+}
+
+/* ─── FOOTER ──────────────────────────────────────────────── */
+.report-footer {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--gray-800);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.footer-text {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.06em; color: var(--gray-400);
+}
+
+.footer-brand {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gray-600);
+}
+</style>
+</head>
+<body>
+
+<!-- ── Top nav ── -->
+<nav class="topnav">
+  <div class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 16 16"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z"/></svg>
+    </div>
+    <a href="index.html" style="font-family:monospace;font-size:10px;color:#666;text-decoration:none;letter-spacing:0.08em;margin-right:10px;">← GT Ops</a><span class="nav-company">OpsIQ</span>
+  </div>
+  <div class="nav-divider"></div>
+  <span class="nav-product">Operations Intelligence Platform</span>
+  <div class="nav-right">
+    <span class="nav-tag">Task Analytics</span>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ── Upload screen ── -->
+  <div id="upload-screen">
+    <div class="up-kicker">Task Completion Module</div>
+    <h1 class="up-h1">FOH vs BOH<br>Weekly Report</h1>
+    <p class="up-sub">Upload your 7shifts export to generate a completion analysis</p>
+
+    <div id="drop-zone">
+      <input type="file" id="file-input" accept=".csv">
+      <div class="up-icon-wrap">
+        <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L8 8m4-4 4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+      </div>
+      <div class="up-label">Drop CSV file here</div>
+      <div class="up-hint">or click to browse files</div>
+    </div>
+
+
+
+    <div id="error-msg"></div>
+  </div>
+
+  <!-- ── Report screen ── -->
+  <div id="report-screen">
+
+    <div class="sub-header">
+      <div class="sub-header-left">
+        <span class="sub-title">Task Completion Report</span>
+        <span class="sub-period" id="rpt-period"></span>
+      </div>
+      <div class="sub-header-right">
+        <button class="upload-new-btn" onclick="resetTool()">↑ Upload New File</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="section-label" style="margin-bottom:12px">Performance Summary</div>
+
+      <div class="kpis">
+        <div class="kpi foh">
+          <div class="kpi-label">Front of House</div>
+          <div class="kpi-val" id="foh-val">—</div>
+          <div class="kpi-sub" id="foh-sub"></div>
+        </div>
+        <div class="kpi boh">
+          <div class="kpi-label">Back of House</div>
+          <div class="kpi-val" id="boh-val">—</div>
+          <div class="kpi-sub" id="boh-sub"></div>
+        </div>
+        <div class="kpi total">
+          <div class="kpi-label">Combined Total</div>
+          <div class="kpi-val" id="ov-val">—</div>
+          <div class="kpi-sub" id="ov-sub"></div>
+        </div>
+      </div>
+
+      <div class="alerts" id="alerts"></div>
+
+      <div class="section-label">Daily Trend</div>
+
+      <div class="chart-panel">
+        <div class="chart-header">
+          <span class="chart-label">Completion Rate — 7 Day View</span>
+          <div class="chart-legend">
+            <div class="leg"><div class="leg-line" style="background:#f5e014"></div>FOH</div>
+            <div class="leg"><div class="leg-line" style="background:#c9b800"></div>BOH</div>
+          </div>
+        </div>
+        <div class="chart-body"><canvas id="chart"></canvas></div>
+      </div>
+
+      <div class="tab-row">
+        <button class="tab active" onclick="switchTab('daily')">Daily Breakdown</button>
+        <button class="tab" onclick="switchTab('lists')">By Task List</button>
+      </div>
+
+      <div id="panel-daily" class="panel active">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:90px">Date</th>
+                <th>Front of House</th>
+                <th>Back of House</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="panel-lists" class="panel">
+        <div class="two-col" id="lists-grid"></div>
+      </div>
+
+      <div class="report-footer">
+        <span class="footer-text" id="rpt-footer"></span>
+        <span class="footer-brand">OpsIQ · Operations Intelligence Platform</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function pctColor(v) {
+  if (v < 50)  return '#e53e3e';
+  if (v < 85)  return '#e8922a';
+  if (v >= 100) return '#f5e014';
+  return '#c9b800';
+}
+
+function fmt1(v) { return v.toFixed(1) + '%'; }
+
+function shortDate(iso) {
+  const [,m,d] = iso.split('-');
+  return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+ +d;
+}
+
+function longDate(iso) {
+  const [y,m,d] = iso.split('-');
+  return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+ +d+', '+y;
+}
+
+function categorize(tl) {
+  const s = (tl||'').toUpperCase();
+  if (s.includes('BOH')) return 'BOH';
+  if (['SERVER','HOST','BAR','FOH'].some(k=>s.includes(k))) return 'FOH';
+  return null;
+}
+
+function parseCSV(text) {
+  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  const headers = splitLine(lines[0]);
+  return lines.slice(1).filter(l=>l.trim()).map(l=>{
+    const vals = splitLine(l), row = {};
+    headers.forEach((h,i)=>row[h.trim()]=(vals[i]||'').trim());
+    return row;
+  });
+}
+
+function splitLine(line) {
+  const out=[]; let cur='', inQ=false;
+  for (const c of line) {
+    if (c==='"') inQ=!inQ;
+    else if (c===',' && !inQ) { out.push(cur); cur=''; }
+    else cur+=c;
+  }
+  out.push(cur); return out;
+}
+
+let chartInst = null;
+
+function processData(rows) {
+  const req = ['Task List','Status','Start Date'];
+  const cols = Object.keys(rows[0]||{});
+  for (const r of req) if (!cols.includes(r)) { showErr(`Missing column: "${r}"`); return; }
+
+  const dates = rows.map(r=>r['Start Date']).filter(Boolean).sort();
+  const minD = dates[0], maxD = dates[dates.length-1];
+
+  const totals = { FOH:{c:0,t:0}, BOH:{c:0,t:0} };
+  const byDate = {};
+  const byList = { FOH:{}, BOH:{} };
+
+  for (const row of rows) {
+    const c = categorize(row['Task List']);
+    if (!c) continue;
+    const done = +row['Status']===1 ? 1 : 0;
+    const d = row['Start Date']||'';
+    totals[c].c += done; totals[c].t++;
+    if (!byDate[d]) byDate[d]={ FOH:{c:0,t:0}, BOH:{c:0,t:0} };
+    byDate[d][c].c += done; byDate[d][c].t++;
+    const ln = row['Task List'];
+    if (!byList[c][ln]) byList[c][ln]={c:0,t:0};
+    byList[c][ln].c += done; byList[c][ln].t++;
+  }
+
+  const fPct = totals.FOH.t ? totals.FOH.c/totals.FOH.t*100 : 0;
+  const bPct = totals.BOH.t ? totals.BOH.c/totals.BOH.t*100 : 0;
+  const tC = totals.FOH.c + totals.BOH.c;
+  const tT = totals.FOH.t + totals.BOH.t;
+  const oPct = tT ? tC/tT*100 : 0;
+
+  $('rpt-period').textContent = minD===maxD ? longDate(minD) : `${longDate(minD)} – ${longDate(maxD)}`;
+  $('foh-val').textContent = fmt1(fPct);
+  $('foh-sub').textContent = `${totals.FOH.c} of ${totals.FOH.t} tasks completed`;
+  $('boh-val').textContent = fmt1(bPct);
+  $('boh-sub').textContent = `${totals.BOH.c} of ${totals.BOH.t} tasks completed`;
+  $('ov-val').textContent  = fmt1(oPct);
+  $('ov-sub').textContent  = `${tC} of ${tT} tasks completed`;
+
+  const sortedDates = Object.keys(byDate).sort();
+  const anomalies = [];
+  for (const d of sortedDates) {
+    const {FOH:f,BOH:b} = byDate[d];
+    const fp = f.t ? f.c/f.t*100 : null;
+    const bp = b.t ? b.c/b.t*100 : null;
+    if (fp!==null && fp<50) anomalies.push({d,side:'FOH',pct:fp,c:f.c,t:f.t});
+    if (bp!==null && bp<50) anomalies.push({d,side:'BOH',pct:bp,c:b.c,t:b.t});
+  }
+
+  const alertsEl = $('alerts');
+  alertsEl.innerHTML = '';
+  if (!anomalies.length) {
+    alertsEl.innerHTML = `<div class="alert ok">
+      <div class="alert-stripe"></div>
+      <span class="alert-icon">✓</span>
+      <span class="alert-body">All clear — no anomaly days detected. Both teams maintained strong completion rates throughout the reporting period.</span>
+    </div>`;
+  } else {
+    anomalies.forEach(a => {
+      const cls = a.pct===0 ? 'danger' : 'warn';
+      const icon = cls === 'danger' ? '✕' : '⚠';
+      alertsEl.innerHTML += `<div class="alert ${cls}">
+        <div class="alert-stripe"></div>
+        <span class="alert-icon">${icon}</span>
+        <span class="alert-body"><strong>${shortDate(a.d)} · ${a.side} · ${a.pct.toFixed(0)}% completion</strong> — ${a.c} of ${a.t} tasks recorded as complete. Recommend reviewing staffing records and checklist logs for this date.</span>
+      </div>`;
+    });
+  }
+
+  const tbody = $('tbl-body');
+  tbody.innerHTML = '';
+  for (const d of sortedDates) {
+    const {FOH:f,BOH:b} = byDate[d];
+    const fp = f.t ? f.c/f.t*100 : null;
+    const bp = b.t ? b.c/b.t*100 : null;
+    const fc = fp!==null ? pctColor(fp) : '#3a3a3a';
+    const bc = bp!==null ? pctColor(bp) : '#3a3a3a';
+    tbody.innerHTML += `<tr>
+      <td class="date-cell">${shortDate(d)}</td>
+      <td><div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:${fp??0}%;background:${fc}"></div></div>
+        <span class="bar-pct" style="color:${fc}">${fp!==null?fmt1(fp):'—'}</span>
+        <span class="bar-ct">${f.t?f.c+'/'+f.t:''}</span>
+      </div></td>
+      <td><div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:${bp??0}%;background:${bc}"></div></div>
+        <span class="bar-pct" style="color:${bc}">${bp!==null?fmt1(bp):'—'}</span>
+        <span class="bar-ct">${b.t?b.c+'/'+b.t:''}</span>
+      </div></td>
+    </tr>`;
+  }
+
+  const listsGrid = $('lists-grid');
+  listsGrid.innerHTML = '';
+  for (const cat of ['FOH','BOH']) {
+    const entries = Object.entries(byList[cat]).sort((a,b)=>(a[1].c/a[1].t)-(b[1].c/b[1].t));
+    const rowsHTML = entries.map(([name,s])=>{
+      const p = s.t ? s.c/s.t*100 : 0;
+      const co = pctColor(p);
+      return `<div class="tl-row">
+        <span class="tl-name" title="${name}">${name}</span>
+        <div class="tl-bar-bg"><div class="tl-bar-fill" style="width:${Math.max(p,2)}%;background:${co}"></div></div>
+        <span class="tl-pct" style="color:${co}">${p.toFixed(0)}%</span>
+      </div>`;
+    }).join('');
+    const label = cat === 'FOH' ? 'Front of House' : 'Back of House';
+    listsGrid.innerHTML += `<div class="list-panel">
+      <div class="list-panel-head ${cat.toLowerCase()}">${label} — Task Lists</div>
+      ${rowsHTML||'<div style="font-size:12px;color:#666">No data available</div>'}
+    </div>`;
+  }
+
+  if (chartInst) { chartInst.destroy(); chartInst = null; }
+  const labels  = sortedDates.map(shortDate);
+  const fohData = sortedDates.map(d=>byDate[d].FOH.t?+(byDate[d].FOH.c/byDate[d].FOH.t*100).toFixed(1):null);
+  const bohData = sortedDates.map(d=>byDate[d].BOH.t?+(byDate[d].BOH.c/byDate[d].BOH.t*100).toFixed(1):null);
+
+  chartInst = new Chart($('chart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label:'FOH', data:fohData, borderColor:'#f5e014', backgroundColor:'rgba(245,224,20,0.06)', tension:0.3, fill:true, pointRadius:3, pointHoverRadius:5, pointBackgroundColor:'#f5e014', borderWidth:1.5, spanGaps:true },
+        { label:'BOH', data:bohData, borderColor:'#c9b800', backgroundColor:'rgba(201,184,0,0.06)', tension:0.3, fill:true, pointRadius:3, pointHoverRadius:5, pointBackgroundColor:'#c9b800', borderWidth:1.5, spanGaps:true }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{ display:false },
+        tooltip:{
+          backgroundColor:'#1a1a1a',
+          borderColor:'#2a2a2a', borderWidth:1,
+          titleColor:'#666', bodyColor:'#d4d4d4',
+          titleFont:{ family:'IBM Plex Mono', size:10 },
+          bodyFont:{ family:'IBM Plex Mono', size:11 },
+          padding:12,
+          callbacks:{ label: ctx=>` ${ctx.dataset.label}  ${ctx.parsed.y?.toFixed(1)}%` }
+        }
+      },
+      scales:{
+        y:{ min:0, max:105,
+          ticks:{callback:v=>v+'%', color:'#444', stepSize:25, font:{family:'IBM Plex Mono',size:10}},
+          grid:{color:'#1a1a1a'}, border:{display:false}
+        },
+        x:{ ticks:{color:'#444', maxRotation:0, font:{family:'IBM Plex Mono',size:10}},
+          grid:{display:false}, border:{display:false}
+        }
+      }
+    }
+  });
+
+  const now = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  $('rpt-footer').textContent = `Report generated ${now}  ·  ${rows.length} total task records processed`;
+
+  $('upload-screen').style.display = 'none';
+  $('report-screen').style.display = 'block';
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',(i===0)===(name==='daily')));
+  $('panel-daily').classList.toggle('active',name==='daily');
+  $('panel-lists').classList.toggle('active',name==='lists');
+}
+
+function resetTool() {
+  $('upload-screen').style.display = 'flex';
+  $('report-screen').style.display = 'none';
+  $('file-input').value = '';
+  hideErr();
+}
+
+function showErr(msg) { const e=$('error-msg'); e.textContent='⚠ '+msg; e.style.display='block'; }
+function hideErr()    { $('error-msg').style.display='none'; }
+
+function handleFile(file) {
+  if (!file||!file.name.endsWith('.csv')) { showErr('Please upload a .csv file.'); return; }
+  hideErr();
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const rows = parseCSV(e.target.result);
+      if (!rows.length) { showErr('CSV appears empty.'); return; }
+      processData(rows);
+    } catch(err) { showErr('Could not parse CSV: '+err.message); }
+  };
+  r.readAsText(file);
+}
+
+$('file-input').addEventListener('change', e=>handleFile(e.target.files[0]));
+
+const zone = $('drop-zone');
+zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('over'); });
+zone.addEventListener('dragleave', ()=>zone.classList.remove('over'));
+zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('over'); handleFile(e.dataTransfer.files[0]); });
+</script>
+</body>
+</html>
