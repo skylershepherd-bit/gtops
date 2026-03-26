@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>GT Ops</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -24,7 +24,7 @@
   --gray-300: #888888;
   --yellow:   #f5e014;
   --yellow-d: #c9b800;
-  --sans: 'Inter', system-ui, sans-serif;
+  --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
   --mono: 'IBM Plex Mono', monospace;
 }
 html { font-size: 14px; }
@@ -33,8 +33,6 @@ body {
   font-family: var(--sans); min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
-
-/* NAV */
 .topnav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   height: 52px; background: var(--gray-950);
@@ -44,119 +42,55 @@ body {
 .nav-logo { display: flex; align-items: center; gap: 10px; }
 .nav-logo-mark {
   width: 28px; height: 28px; background: var(--yellow);
-  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.nav-logo-mark svg { width: 16px; height: 16px; fill: var(--black); }
-.nav-name { font-size: 14px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #fff; }
+.nav-name { font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; }
 .nav-right { margin-left: auto; }
 .nav-tag {
   font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--gray-400); background: var(--gray-800);
   border: 1px solid var(--gray-700); border-radius: 4px; padding: 3px 10px;
 }
-
-/* PAGE */
 .page { padding-top: 52px; min-height: 100vh; }
-
-/* HERO */
-.hero {
-  padding: 48px 24px 40px;
-  border-bottom: 1px solid var(--gray-700);
-  background: var(--gray-950);
-}
-.hero-kicker {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
-  text-transform: uppercase; color: var(--yellow); margin-bottom: 12px;
-}
-.hero-title {
-  font-size: clamp(24px, 5vw, 36px); font-weight: 700;
-  color: #fff; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 8px;
-}
-.hero-sub { font-size: 13px; color: var(--gray-400); max-width: 380px; }
-
-/* TOOLS GRID */
+.hero { padding: 48px 24px 40px; border-bottom: 1px solid var(--gray-700); background: var(--gray-950); }
+.hero-title { font-size: clamp(28px, 6vw, 40px); font-weight: 700; color: #fff; letter-spacing: -0.02em; line-height: 1.1; }
 .tools-section { padding: 32px 20px; }
 .tools-label {
-  font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--gray-400);
-  margin-bottom: 16px; padding-bottom: 10px;
-  border-bottom: 1px solid var(--gray-700);
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--gray-400); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--gray-700);
 }
 .tools-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-
 .tool-card {
-  background: var(--gray-900); border: 1px solid var(--gray-700);
-  border-radius: 10px; padding: 20px 18px;
-  text-decoration: none; color: inherit;
-  display: flex; flex-direction: column; gap: 0;
-  position: relative; overflow: hidden;
-  transition: border-color 0.15s, background 0.15s;
-  cursor: pointer;
+  background: var(--gray-900); border: 1px solid var(--gray-700); border-radius: 10px; padding: 20px 18px;
+  text-decoration: none; color: inherit; display: flex; flex-direction: column;
+  position: relative; overflow: hidden; transition: border-color 0.15s, background 0.15s; cursor: pointer;
 }
-.tool-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--gray-700); transition: background 0.15s;
-}
+.tool-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gray-700); transition: background 0.15s; }
 .tool-card:hover { background: var(--gray-800); border-color: var(--gray-600); }
 .tool-card:hover::before { background: var(--yellow); }
-.tool-card.available:hover::before { background: var(--yellow); }
 .tool-card.coming-soon { opacity: 0.5; cursor: default; }
 .tool-card.coming-soon:hover { background: var(--gray-900); border-color: var(--gray-700); }
 .tool-card.coming-soon:hover::before { background: var(--gray-700); }
-
-.tool-icon {
-  width: 36px; height: 36px; border-radius: 8px;
-  background: var(--gray-800); border: 1px solid var(--gray-700);
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 14px;
-}
+.tool-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--gray-800); border: 1px solid var(--gray-700); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
 .tool-icon svg { width: 18px; height: 18px; fill: none; stroke: var(--yellow); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-.tool-icon svg.filled { fill: var(--yellow); stroke: none; }
 .tool-name { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 5px; }
 .tool-desc { font-size: 11px; color: var(--gray-400); line-height: 1.5; margin-bottom: 14px; flex: 1; }
 .tool-footer { display: flex; align-items: center; justify-content: space-between; }
-.tool-status {
-  font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
-  text-transform: uppercase; padding: 2px 8px; border-radius: 4px;
-}
+.tool-status { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; }
 .status-live { background: rgba(56,161,105,0.12); color: #38a169; }
 .status-soon { background: rgba(255,255,255,0.05); color: var(--gray-400); }
-.tool-arrow { font-size: 16px; color: var(--gray-600); }
-.tool-card.available .tool-arrow { color: var(--yellow-d); }
-
-/* INSTALL BANNER */
-.install-banner {
-  margin: 0 20px 24px;
-  background: var(--gray-900); border: 1px solid var(--gray-700);
-  border-radius: 10px; padding: 16px 18px;
-  display: flex; align-items: center; gap: 14px;
-}
-.install-icon {
-  width: 36px; height: 36px; flex-shrink: 0;
-  background: var(--yellow-dim, rgba(245,224,20,0.08));
-  border-radius: 8px; display: flex; align-items: center; justify-content: center;
-}
+.tool-arrow { font-size: 16px; color: var(--yellow-d); }
+.tool-card.coming-soon .tool-arrow { color: var(--gray-600); }
+.install-banner { margin: 0 20px 24px; background: var(--gray-900); border: 1px solid var(--gray-700); border-radius: 10px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; }
+.install-icon { width: 36px; height: 36px; flex-shrink: 0; background: rgba(245,224,20,0.08); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 .install-icon svg { width: 18px; height: 18px; stroke: var(--yellow); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .install-text { flex: 1; }
 .install-title { font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 2px; }
 .install-sub { font-size: 11px; color: var(--gray-400); line-height: 1.4; }
-.install-btn {
-  background: var(--yellow); color: var(--black);
-  border: none; border-radius: 6px; padding: 7px 14px;
-  font-family: var(--mono); font-size: 10px; font-weight: 500;
-  letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
-  white-space: nowrap; flex-shrink: 0;
-  transition: opacity 0.15s;
-}
+.install-btn { background: var(--yellow); color: var(--black); border: none; border-radius: 6px; padding: 7px 14px; font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: opacity 0.15s; }
 .install-btn:hover { opacity: 0.85; }
-
-/* FOOTER */
-.platform-footer {
-  padding: 20px; border-top: 1px solid var(--gray-700); margin-top: 8px;
-  display: flex; justify-content: space-between; align-items: center;
-}
+.platform-footer { padding: 20px; border-top: 1px solid var(--gray-700); margin-top: 8px; display: flex; justify-content: space-between; align-items: center; }
 .pf-text { font-family: var(--mono); font-size: 10px; color: var(--gray-600); }
-
 @media (max-width: 480px) {
   .tools-grid { grid-template-columns: 1fr; }
   .hero { padding: 32px 16px 28px; }
@@ -170,7 +104,16 @@ body {
 <nav class="topnav">
   <div class="nav-logo">
     <div class="nav-logo-mark">
-      <svg viewBox="0 0 16 16"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z"/></svg>
+      <svg viewBox="0 0 512 512" width="15" height="15" fill="#000000">
+        <circle cx="256" cy="96" r="76"/>
+        <rect x="230" y="168" width="52" height="6" rx="3"/>
+        <rect x="218" y="172" width="76" height="22" rx="4"/>
+        <rect x="230" y="192" width="52" height="18" rx="2"/>
+        <polygon points="230,208 282,208 372,408 140,408"/>
+        <rect x="140" y="408" width="232" height="24" rx="4"/>
+        <rect x="122" y="428" width="268" height="30" rx="6"/>
+        <ellipse cx="256" cy="458" rx="134" ry="14"/>
+      </svg>
     </div>
     <span class="nav-name">GT Ops</span>
   </div>
@@ -182,16 +125,14 @@ body {
 <div class="page">
 
   <div class="hero">
-    <div class="hero-kicker">Operations Platform</div>
-    <div class="hero-title">Game Theory<br>Intelligence Suite</div>
-    <div class="hero-sub">Scheduling, reporting, and analytics tools built for your operation.</div>
+    <div class="hero-title">Game Theory</div>
   </div>
 
   <div class="tools-section">
     <div class="tools-label">Tools</div>
     <div class="tools-grid">
 
-      <a class="tool-card available" href="labor.html">
+      <a class="tool-card" href="labor.html">
         <div class="tool-icon">
           <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
@@ -203,7 +144,7 @@ body {
         </div>
       </a>
 
-      <a class="tool-card available" href="tasks.html">
+      <a class="tool-card" href="tasks.html">
         <div class="tool-icon">
           <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         </div>
@@ -278,6 +219,21 @@ document.getElementById('install-btn').addEventListener('click', async () => {
   deferredPrompt = null;
   if (outcome === 'accepted') document.getElementById('install-banner').style.display = 'none';
 });
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            newWorker.postMessage({ action: 'skipWaiting' });
+          }
+        });
+      });
+    });
+  });
+}
 </script>
 </body>
 </html>
