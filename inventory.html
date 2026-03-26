@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
+<title>GT Ops — Inventory Count</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#000;--g950:#0a0a0a;--g900:#111;--g800:#1a1a1a;
+  --g700:#2a2a2a;--g600:#3a3a3a;--g400:#666;--g300:#888;
+  --yellow:#f5e014;--yd:#c9b800;
+  --red:#e53e3e;--amber:#e8922a;--green:#38a169;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+html{font-size:14px}
+body{background:var(--black);color:#d4d4d4;font-family:var(--sans);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+.topnav{position:fixed;top:0;left:0;right:0;z-index:200;height:52px;background:var(--g950);border-bottom:1px solid var(--g700);display:flex;align-items:center;padding:0 16px;gap:0}
+.back-btn{display:flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;color:var(--g300);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:0;margin-right:12px;text-decoration:none;flex-shrink:0}
+.back-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.back-btn:hover{color:#fff}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-logo-mark{width:28px;height:28px;background:var(--yellow);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.nav-company{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.nav-divider{width:1px;height:20px;background:var(--g700);margin:0 14px}
+.nav-product{font-size:12px;color:var(--g300);letter-spacing:.04em}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.nav-tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--g400);background:var(--g800);border:1px solid var(--g700);border-radius:4px;padding:3px 8px;white-space:nowrap}
+
+/* SYNC BTN */
+.sync-btn{background:var(--yellow);color:var(--black);border:none;border-radius:6px;padding:6px 14px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.sync-btn:hover{opacity:.85}
+.sync-btn:disabled{opacity:.4;cursor:default}
+.sync-btn.syncing{background:var(--g700);color:var(--g300)}
+.sync-btn.success{background:var(--green);color:#fff}
+.sync-btn.error{background:var(--red);color:#fff}
+
+/* PAGE */
+.page{padding-top:52px;min-height:100vh}
+
+/* TOOLBAR */
+.toolbar{background:var(--g900);border-bottom:1px solid var(--g700);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:52px;z-index:100}
+.search-wrap{flex:1;position:relative}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:var(--g400);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.search-input{width:100%;background:var(--g800);border:1px solid var(--g700);border-radius:6px;padding:8px 10px 8px 32px;color:#fff;font-family:var(--sans);font-size:13px;outline:none}
+.search-input::placeholder{color:var(--g400)}
+.search-input:focus{border-color:var(--yd)}
+.filter-btn{background:var(--g800);border:1px solid var(--g700);border-radius:6px;padding:8px 12px;color:var(--g300);font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .15s}
+.filter-btn.active{background:rgba(229,62,62,.15);border-color:var(--red);color:var(--red)}
+
+/* STATS BAR */
+.stats-bar{background:var(--g950);border-bottom:1px solid var(--g700);padding:10px 16px;display:flex;gap:20px}
+.stat{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--g400)}
+.stat-dot{width:6px;height:6px;border-radius:50%}
+.stat-num{color:#fff;font-weight:500}
+
+/* SECTIONS */
+.section-hdr{background:var(--g950);padding:10px 16px;border-bottom:1px solid var(--g700);display:flex;align-items:center;justify-content:space-between;position:sticky;top:108px;z-index:90;cursor:pointer;user-select:none}
+.section-hdr:hover .section-title{opacity:.8}
+.section-chevron{font-size:10px;color:var(--g400);transition:transform .2s;flex-shrink:0;margin-left:8px}
+.section-hdr.collapsed .section-chevron{transform:rotate(-90deg)}
+.section-items.collapsed{display:none}
+.section-title{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);font-weight:500}
+.section-count{font-family:var(--mono);font-size:10px;color:var(--g400)}
+
+/* ITEM ROWS */
+.item-row{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);gap:12px;transition:background .1s}
+.item-row:hover{background:rgba(255,255,255,.02)}
+.item-row.low{border-left:3px solid var(--red)}
+.item-row.ok{border-left:3px solid transparent}
+.item-info{flex:1;min-width:0}
+.item-name{font-size:13px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-meta{font-family:var(--mono);font-size:10px;color:var(--g400);margin-top:2px}
+.item-par{color:var(--g300)}
+.item-par.low{color:var(--red)}
+.item-par.ok{color:var(--green)}
+
+/* COUNT INPUT */
+.count-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.count-btn{background:var(--g700);border:none;color:var(--g300);width:28px;height:28px;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s;flex-shrink:0}
+.count-btn:hover,.count-btn:active{background:var(--g600);color:#fff}
+.count-input{width:56px;background:var(--g800);border:1px solid var(--g700);border-radius:6px;padding:5px 6px;color:#fff;font-family:var(--mono);font-size:14px;font-weight:500;text-align:center;outline:none;appearance:textfield}
+.count-input::-webkit-inner-spin-button,.count-input::-webkit-outer-spin-button{appearance:none}
+.count-input:focus{border-color:var(--yd)}
+.count-input.low{border-color:rgba(229,62,62,.4);color:var(--red)}
+.count-input.ok{border-color:rgba(56,161,105,.4)}
+
+/* EMPTY */
+.empty{padding:48px 16px;text-align:center;color:var(--g400);font-family:var(--mono);font-size:12px}
+
+/* AUTH MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--g900);border:1px solid var(--g700);border-radius:12px;padding:28px 24px;width:100%;max-width:400px}
+.modal-title{font-size:16px;font-weight:600;color:#fff;margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--g400);margin-bottom:24px;line-height:1.5}
+.modal-btn{width:100%;background:var(--yellow);color:var(--black);border:none;border-radius:8px;padding:12px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.modal-btn:hover{opacity:.85}
+.modal-cancel{display:block;text-align:center;margin-top:12px;color:var(--g400);font-size:13px;cursor:pointer}
+.modal-cancel:hover{color:#fff}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--g800);border:1px solid var(--g700);border-radius:8px;padding:10px 20px;font-family:var(--mono);font-size:12px;color:#fff;z-index:400;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.toast.green{border-color:var(--green);color:var(--green)}
+.toast.red{border-color:var(--red);color:var(--red)}
+
+/* FOOTER */
+.page-footer{padding:20px 16px;border-top:1px solid var(--g700);display:flex;justify-content:space-between;align-items:center}
+.footer-text{font-family:var(--mono);font-size:10px;color:var(--g600)}
+
+@media(max-width:768px){
+  html{font-size:16px}
+  .nav-divider,.nav-product{display:none}
+  .nav-logo{display:none}
+  .stats-bar{gap:12px}
+  .section-hdr{top:108px}
+}
+</style>
+</head>
+<body>
+
+<!-- CONFIG — paste your Client ID below -->
+<script>
+const SHEET_ID   = '1dTFq7bt7VaROu-eNXL3ie5J-p2wWJqSy3DdN8zg-yDE';
+const SHEET_TAB  = 'Countsheet';
+const CLIENT_ID  = 'PASTE_YOUR_CLIENT_ID_HERE';
+const SCOPES     = 'https://www.googleapis.com/auth/spreadsheets';
+</script>
+
+<nav class="topnav">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>GT Ops
+  </a>
+  <div class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
+        <text x="14" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" fill="#000">GT</text>
+      </svg>
+    </div>
+    <span class="nav-company">Game Theory</span>
+  </div>
+  <div class="nav-divider"></div>
+  <span class="nav-product">Inventory Count</span>
+  <div class="nav-right">
+    <button class="sync-btn" id="sync-btn" onclick="startSync()">Sync to Sheet</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="search" type="text" placeholder="Search items..." oninput="renderList()">
+    </div>
+    <button class="filter-btn" id="filter-low" onclick="toggleFilter()">Low only</button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-dot" style="background:var(--g600)"></div><span id="stat-total" class="stat-num">0</span>&nbsp;items</div>
+    <div class="stat"><div class="stat-dot" style="background:var(--red)"></div><span id="stat-low" class="stat-num">0</span>&nbsp;below par</div>
+    <div class="stat"><div class="stat-dot" style="background:var(--green)"></div><span id="stat-counted" class="stat-num">0</span>&nbsp;counted</div>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="page-footer">
+    <span class="footer-text" id="footer-date"></span>
+    <span class="footer-text">Game Theory · Inventory</span>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal">
+    <div class="modal-title">Sign in to sync</div>
+    <div class="modal-sub">You'll be asked to sign in with Google to allow GT Ops to write counts to your inventory sheet.</div>
+    <button class="modal-btn" onclick="doAuth()">Sign in with Google</button>
+    <span class="modal-cancel" onclick="closeModal()">Cancel</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ITEMS = [
+  {row:3, section:'TOP SHELF', item:'Whole Milk', uom:'Gallons', par:4.0},
+  {row:4, section:'TOP SHELF', item:'Half + Half', uom:'1Qt', par:12.0},
+  {row:5, section:'TOP SHELF', item:'Buttermilk (Bottles & Brine)', uom:'1/2 Gallon', par:5.0},
+  {row:6, section:'TOP SHELF', item:'Butter', uom:'Block (1lb)', par:8.0},
+  {row:7, section:'TOP SHELF', item:'Cream Cheese', uom:'1lb', par:1.0},
+  {row:8, section:'TOP SHELF', item:'Eggs, Large (Eggs & Aioli)', uom:'Trays', par:7.0},
+  {row:9, section:'TOP SHELF', item:'Pickles', uom:'Buckets', par:0.25},
+  {row:10, section:'TOP SHELF', item:'Nutella Cheesecake', uom:'Boxes', par:1.0},
+  {row:11, section:'TOP SHELF', item:'Whip Cream', uom:'Cans', par:3.0},
+  {row:13, section:'BOTTOM SHELF', item:'Chicken Base (Walk-in & Pantry)', uom:'Containers', par:0.5},
+  {row:14, section:'BOTTOM SHELF', item:'Beef Base (Walk-in & Panrty)', uom:'Containers', par:0.5},
+  {row:15, section:'BOTTOM SHELF', item:'Brussels (Whole & Portioned)', uom:'Case (20lb)', par:2.0},
+  {row:16, section:'BOTTOM SHELF', item:'Tortilla Chips', uom:'Case', par:2.0},
+  {row:17, section:'BOTTOM SHELF', item:'Pretzels', uom:'Case', par:3.0},
+  {row:18, section:'BOTTOM SHELF', item:'Yellow Onions', uom:'Each', par:10.0},
+  {row:19, section:'BOTTOM SHELF', item:'Red Onions', uom:'Each', par:6.0},
+  {row:20, section:'BOTTOM SHELF', item:'Brioche Buns', uom:'Bags (8 each)', par:7.0},
+  {row:21, section:'BOTTOM SHELF', item:'Slider Buns', uom:'Bags (12 each)', par:4.0},
+  {row:22, section:'BOTTOM SHELF', item:'Texas Toast', uom:'Loaf', par:1.5},
+  {row:24, section:'PRODUCE SHELF', item:'Tomatoes (Raw & Salsa)', uom:'Case', par:1.5},
+  {row:25, section:'PRODUCE SHELF', item:'Avocados', uom:'Case', par:0.5},
+  {row:26, section:'PRODUCE SHELF', item:'Lime', uom:'Case', par:0.75},
+  {row:27, section:'PRODUCE SHELF', item:'Lemons', uom:'Case', par:0.75},
+  {row:28, section:'PRODUCE SHELF', item:'Oranges', uom:'Count', par:10.0},
+  {row:29, section:'PRODUCE SHELF', item:'Blue Berries', uom:'Container (8oz)', par:4.0},
+  {row:30, section:'PRODUCE SHELF', item:'Cold Brew Concentrate (new)', uom:'bottle', par:2.0},
+  {row:32, section:'MIDDLE PRODUCE SHELF', item:'Spring Mix', uom:'1 lb container', par:1.5},
+  {row:33, section:'MIDDLE PRODUCE SHELF', item:'Jalapeno', uom:'10lb Bag', par:0.75},
+  {row:34, section:'MIDDLE PRODUCE SHELF', item:'Serranos', uom:'1lb', par:0.5},
+  {row:35, section:'MIDDLE PRODUCE SHELF', item:'Cilantro', uom:'Sprigs', par:10.0},
+  {row:36, section:'MIDDLE PRODUCE SHELF', item:'Purple Cabbage Heads (Count Slaw)', uom:'Head', par:2.5},
+  {row:37, section:'MIDDLE PRODUCE SHELF', item:'Green Bell Pepper', uom:'each', par:4.0},
+  {row:38, section:'MIDDLE PRODUCE SHELF', item:'Cucumbers', uom:'Cucumbers', par:5.0},
+  {row:39, section:'MIDDLE PRODUCE SHELF', item:'Romaine Lettuce', uom:'Romaine Heads', par:4.0},
+  {row:40, section:'MIDDLE PRODUCE SHELF', item:'Garlic, Peeled', uom:'5lb Container', par:0.25},
+  {row:41, section:'MIDDLE PRODUCE SHELF', item:'Whole Potatos', uom:'10 lb bag', par:0.3},
+  {row:42, section:'MIDDLE PRODUCE SHELF', item:'Rosemary', uom:'Bag (1lb)', par:0.75},
+  {row:43, section:'MIDDLE PRODUCE SHELF', item:'Strawberries (Count Bar)', uom:'16oz Container', par:3.0},
+  {row:44, section:'MIDDLE PRODUCE SHELF', item:'Celery', uom:'stalks', par:8.0},
+  {row:47, section:'CHEESE SHELF', item:'Mild Cheddar', uom:'Bag (5lb)', par:3.0},
+  {row:48, section:'CHEESE SHELF', item:'Monterey Cheese', uom:'Bag (5lb)', par:3.0},
+  {row:49, section:'CHEESE SHELF', item:'Mozzarella Cheese', uom:'Bag (5lb)', par:3.0},
+  {row:50, section:'CHEESE SHELF', item:'Shredded Sharp Cheddar', uom:'Bag (5lb)', par:1.5},
+  {row:51, section:'CHEESE SHELF', item:'Fruit Artigiano (or Port Wine Derby)', uom:'5lb Block', par:2.0},
+  {row:52, section:'CHEESE SHELF', item:'Red Wax Gouda (& Portioned Cut Gouda)', uom:'Wheel (5lb)', par:0.5},
+  {row:53, section:'CHEESE SHELF', item:'Sliced Fresh Mozzarella', uom:'Packs', par:4.0},
+  {row:54, section:'CHEESE SHELF', item:'Fiorucci Genoa Salami', uom:'2.5lb Packs', par:1.0},
+  {row:55, section:'CHEESE SHELF', item:'Prosciutto', uom:'Pack (1lb)', par:2.0},
+  {row:56, section:'CHEESE SHELF', item:'Parmesan/Romano mix, Grated', uom:'Bag (5 lb)', par:0.75},
+  {row:57, section:'CHEESE SHELF', item:'Havarti Cheese', uom:'Packs', par:2.0},
+  {row:59, section:'PROTEIN SHELF', item:'Chicken Breast (Case & Diced/Sliced/Tempered)', uom:'Case', par:2.0},
+  {row:60, section:'PROTEIN SHELF', item:'Chicken Wings (count parfried trays)', uom:'Case', par:1.0},
+  {row:61, section:'PROTEIN SHELF', item:'Bacon (18/22)', uom:'Box', par:0.75},
+  {row:65, section:'FREEZER', item:'French Fries (battered)', uom:'Bags (5lbs)', par:35.0},
+  {row:66, section:'FREEZER', item:'Sweet Potato Fries', uom:'Bags (3lbs)', par:9.0},
+  {row:67, section:'FREEZER', item:'Hashbrown', uom:'carton', par:3.0},
+  {row:68, section:'FREEZER', item:'Breakfast Sausage', uom:'Bags', par:0.75},
+  {row:69, section:'FREEZER', item:'Toffee Cake', uom:'each', par:10.0},
+  {row:70, section:'FREEZER', item:'Guajillo Steak', uom:'each (15lb)', par:0.9},
+  {row:71, section:'FREEZER', item:'Ground Beef (Purchase Mondays)', uom:'Logs (10lb)', par:1.5},
+  {row:72, section:'FREEZER', item:'Pork Butt', uom:'Bag (8.5 lbs)', par:0.5},
+  {row:73, section:'FREEZER', item:'Shrimp 26/30ct (Walk-in & Freezer)', uom:'Bags (2lb)', par:10.0},
+  {row:74, section:'FREEZER', item:'Ice Cream, Vanilla', uom:'Buckets', par:0.8},
+  {row:75, section:'FREEZER', item:'Bratwurst (+freezer)', uom:'12 links', par:3.0},
+  {row:76, section:'FREEZER', item:'Sweet Whole Corn (frozen bag)', uom:'Bag', par:1.0},
+  {row:77, section:'FREEZER', item:'Peas and Carrots, Frozen (Freezer)', uom:'Bag', par:0.5},
+  {row:78, section:'FREEZER', item:'Puff Pastries', uom:'box', par:1.5},
+  {row:79, section:'FREEZER', item:'Potstickers, Pork (Walk-In & Freezer)', uom:'Bags', par:5.0},
+  {row:81, section:'Back Pantry Shelf', item:'Baking Powder', uom:'5lb Container', par:0.25},
+  {row:82, section:'Back Pantry Shelf', item:'Baking Soda', uom:'5lb Container', par:0.25},
+  {row:83, section:'Back Pantry Shelf', item:'Brown Sugar', uom:'1lb Box', par:6.0},
+  {row:84, section:'Back Pantry Shelf', item:'Powder Sugar', uom:'2lb Bags', par:1.0},
+  {row:85, section:'Back Pantry Shelf', item:'Chocolate Chips 1000CT, Mini', uom:'5lb bag', par:2.0},
+  {row:86, section:'Back Pantry Shelf', item:'Light Corn Syrup', uom:'1gal Bottle', par:0.25},
+  {row:87, section:'Back Pantry Shelf', item:'Lard', uom:'lbs', par:6.0},
+  {row:88, section:'Back Pantry Shelf', item:'Corn Starch (chicken flour count)', uom:'3.5lb Tub', par:3.0},
+  {row:89, section:'Back Pantry Shelf', item:'Sodium Citrate', uom:'bag (1 lb)', par:1.0},
+  {row:91, section:'Inside Pantry Shelf', item:'Black Beans, Canned (prepped)', uom:'Cans', par:1.0},
+  {row:92, section:'Inside Pantry Shelf', item:'Quinoa (prepped)', uom:'Bags', par:1.0},
+  {row:93, section:'Inside Pantry Shelf', item:'Canned Tomatillos (walk-in & pantry)', uom:'can (5lb)', par:0.75},
+  {row:94, section:'Inside Pantry Shelf', item:'Entertainment Crackers', uom:'Boxes', par:0.5},
+  {row:95, section:'Inside Pantry Shelf', item:'Pecan, Praline (Kirkland)', uom:'Each', par:1.5},
+  {row:96, section:'Inside Pantry Shelf', item:'Dried Cranberries', uom:'Bag (5lb)', par:0.5},
+  {row:97, section:'Inside Pantry Shelf', item:'Macaroni Noodles', uom:'Bags', par:1.5},
+  {row:98, section:'Inside Pantry Shelf', item:'Green Chile Diced, Canned', uom:'Cans', par:3.0},
+  {row:99, section:'Inside Pantry Shelf', item:'Chipotle Peppers, Canned', uom:'Can (5lb)', par:1.0},
+  {row:100, section:'Inside Pantry Shelf', item:'2 Gallon Ziploc Bags', uom:'Box', par:0.25},
+  {row:101, section:'Inside Pantry Shelf', item:'1 Gallon Ziploc Bag', uom:'Box', par:0.25},
+  {row:102, section:'Inside Pantry Shelf', item:'33 Gallon', uom:'case', par:0.5},
+  {row:103, section:'Inside Pantry Shelf', item:'44 Gallon', uom:'case', par:0.25},
+  {row:105, section:'Right Pantry Shelf', item:'Sriracha', uom:'64floz Bottle', par:4.0},
+  {row:106, section:'Right Pantry Shelf', item:'Mayo (Check Bar Fridge & Count Aioli)', uom:'Gallons', par:3.0},
+  {row:107, section:'Right Pantry Shelf', item:"Sweet Baby Ray's Honey BBQ", uom:'Gallons', par:0.75},
+  {row:108, section:'Right Pantry Shelf', item:"Frank's Red Hot (Check Pantry)", uom:'Gallons', par:0.5},
+  {row:109, section:'Right Pantry Shelf', item:'Dijon Mustard, Can', uom:'9lb', par:1.0},
+  {row:110, section:'Right Pantry Shelf', item:'Stone Ground Mustard, Zatarains', uom:'container', par:1.0},
+  {row:111, section:'Right Pantry Shelf', item:'Fish Sauce', uom:'Bottles', par:0.5},
+  {row:112, section:'Right Pantry Shelf', item:'Thai Chili sauce (Mae Ploy only)', uom:'Bottle', par:6.0},
+  {row:113, section:'Right Pantry Shelf', item:'Oyster Sauce', uom:'Cans', par:0.75},
+  {row:114, section:'Right Pantry Shelf', item:'Olive Oil', uom:'2L Bottle', par:0.75},
+  {row:115, section:'Right Pantry Shelf', item:'Soy Sauce, Regular, Kikkoman', uom:'Bottles', par:0.1},
+  {row:116, section:'Right Pantry Shelf', item:'Ketchup (generic)', uom:'bottles', par:10.0},
+  {row:117, section:'Right Pantry Shelf', item:'White Distilled Vinegar', uom:'Bottles', par:0.25},
+  {row:118, section:'Right Pantry Shelf', item:'Vanilla Extract', uom:'32floz Bottle', par:0.25},
+  {row:119, section:'Right Pantry Shelf', item:'Maple Syrup', uom:'Bottles (gallon)', par:0.25},
+  {row:120, section:'Right Pantry Shelf', item:'Honey, Clover', uom:'Bottles', par:0.5},
+  {row:121, section:'Right Pantry Shelf', item:'Pancake Syrup', uom:'Bottles', par:0.5},
+  {row:122, section:'Right Pantry Shelf', item:'Kosher Salt', uom:'3lb Boxes', par:4.0},
+  {row:123, section:'Right Pantry Shelf', item:'pearl onions', uom:'container', par:1.0},
+  {row:124, section:'Right Pantry Shelf', item:'gherkins', uom:'container', par:1.0},
+  {row:125, section:'Right Pantry Shelf', item:'Gochujang', uom:'6lb Container', par:0.5},
+  {row:126, section:'Right Pantry Shelf', item:'Banana Peppers Mild (Del Sold Brand)', uom:'container', par:1.0},
+  {row:127, section:'Right Pantry Shelf', item:'Dark Soy Sauce', uom:'1/2 Gal', par:0.25},
+  {row:128, section:'Right Pantry Shelf', item:'Marmite', uom:'600g Container', par:0.5},
+  {row:129, section:'Right Pantry Shelf', item:'Worcestershire', uom:'1Gal', par:0.1},
+  {row:130, section:'Right Pantry Shelf', item:'Pan Spray, Butter', uom:'Bottle', par:1.0},
+  {row:132, section:'BACK SHELF - PREP SINK', item:'Flour Tortillas (Check Fryer Shelf)', uom:'bag', par:10.0},
+  {row:133, section:'BACK SHELF - PREP SINK', item:'Corn Tortillas', uom:'bag', par:1.0},
+  {row:134, section:'BACK SHELF - PREP SINK', item:'Grill Bricks', uom:'Packs', par:0.0},
+  {row:135, section:'BACK SHELF - PREP SINK', item:'Flat Top Cleaner', uom:'Bottles', par:1.0},
+  {row:136, section:'BACK SHELF - PREP SINK', item:'Boil-out Fryer Solution', uom:'Packs', par:2.0},
+  {row:137, section:'BACK SHELF - PREP SINK', item:'6.5X8 Portion Bags', uom:'Boxes', par:0.5},
+  {row:138, section:'BACK SHELF - PREP SINK', item:'Canola Fryer Oil (preferred)', uom:'Jugs (35lb)', par:8.5},
+  {row:139, section:'BACK SHELF - PREP SINK', item:'All-Purpose Flour', uom:'Bag (25lb)', par:2.0},
+  {row:140, section:'BACK SHELF - PREP SINK', item:'Granulated Sugar', uom:'Bag (25lb)', par:1.0},
+  {row:142, section:'Spices', item:'Allspice', uom:'Jugs', par:0.25},
+  {row:143, section:'Spices', item:'Black Pepper', uom:'Jugs', par:0.25},
+  {row:144, section:'Spices', item:'Cinammon, Ground', uom:'Jug (5lb)', par:0.25},
+  {row:145, section:'Spices', item:'Cumin', uom:'Jugs', par:0.25},
+  {row:146, section:'Spices', item:'Coriander', uom:'16oz Bottle', par:0.25},
+  {row:147, section:'Spices', item:'Cayenne', uom:'Jugs', par:0.5},
+  {row:148, section:'Spices', item:'Garlic Powder', uom:'Jugs', par:0.25},
+  {row:149, section:'Spices', item:'Onion Powder', uom:'Jugs', par:0.25},
+  {row:150, section:'Spices', item:'Oregano', uom:'Jugs', par:0.25},
+  {row:151, section:'Spices', item:'Paprika', uom:'Jugs', par:0.5},
+  {row:152, section:'Spices', item:'Parsley, Dried', uom:'Jugs', par:0.25},
+  {row:153, section:'Spices', item:'White Sesame Seeds', uom:'Jugs', par:0.25},
+  {row:154, section:'Spices', item:'Black Sesame Seeds', uom:'Jugs', par:0.25},
+  {row:155, section:'Spices', item:'White Pepper', uom:'Jugs', par:0.25},
+  {row:156, section:'Spices', item:'Lemon Pepper', uom:'Jugs', par:0.25},
+  {row:157, section:'Spices', item:'Mushroom Powder', uom:'Jug (1lb Bag)', par:0.25},
+  {row:158, section:'Spices', item:'Ranch Powder', uom:'container (32oz)', par:3.0},
+  {row:159, section:'Spices', item:'Truffle Salt', uom:'container (32oz)', par:2.0},
+  {row:161, section:'Server Fridge', item:'Mint (Check w/ Bar)', uom:'Bag', par:0.4},
+  {row:162, section:'Server Fridge', item:'Sour Cream (Check Bar Fridge)', uom:'Tub (5lb)', par:0.75},
+  {row:163, section:'Server Fridge', item:'Orange Juice (Bar Fridge)', uom:'Gallons', par:2.0},
+  {row:164, section:'Server Fridge', item:'Coffee Mate Creamer Pods, Original', uom:'180pk Box', par:0.25},
+  {row:165, section:'Server Fridge', item:"Ken's Balsamic Vinaigrette", uom:'16floz Bottle', par:0.5},
+  {row:166, section:'Server Fridge', item:'Coffee - Cafe Bustelo', uom:'Can (36oz)', par:0.25},
+  {row:168, section:'Line/Sink', item:'Cholula (Check Line)', uom:'12floz Bottle', par:0.25},
+  {row:169, section:'Line/Sink', item:'Canola (corn) Salad Oil (count aioli)', uom:'35lb Jug', par:0.5},
+  {row:170, section:'Line/Sink', item:'Super Rave (dish sink soap) blue', uom:'bottle', par:0.25},
+  {row:171, section:'Line/Sink', item:'Sani Quad (dish sanitizer) pink', uom:'bottle', par:0.1},
+  {row:173, section:'Bar Liquor Shelf', item:'Cranberry Juice', uom:'jug', par:1.0},
+  {row:174, section:'Bar Liquor Shelf', item:'Pineapple Juice', uom:'cans', par:3.0},
+  {row:175, section:'Bar Liquor Shelf', item:'Grapefruit Juice', uom:'jug', par:3.0},
+  {row:176, section:'Bar Liquor Shelf', item:'Bitter Orange Juice', uom:'bottle', par:3.0},
+  {row:177, section:'Bar Liquor Shelf', item:'bloody mary mix (zing zang)', uom:'container (32oz)', par:3.0},
+];
+
+// State
+const counts = {};
+const collapsedSections = new Set();
+let filterLow = false;
+let tokenClient = null;
+let accessToken = null;
+
+// Init Google Identity Services
+function loadGIS() {
+  if (CLIENT_ID === 'PASTE_YOUR_CLIENT_ID_HERE') return;
+  const script = document.createElement('script');
+  script.src = 'https://accounts.google.com/gsi/client';
+  script.onload = () => {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: (resp) => {
+        if (resp.error) { showToast('Auth failed: ' + resp.error, 'red'); return; }
+        accessToken = resp.access_token;
+        pushToSheets();
+      }
+    });
+  };
+  document.head.appendChild(script);
+}
+
+function getCount(row) {
+  return counts[row] !== undefined ? counts[row] : '';
+}
+
+function setCount(row, val) {
+  const num = parseFloat(val);
+  counts[row] = isNaN(num) ? '' : num;
+  updateStats();
+  updateRowStyle(row);
+}
+
+function stepCount(row, delta) {
+  const cur = getCount(row);
+  const num = (cur === '' ? 0 : parseFloat(cur)) + delta;
+  const rounded = Math.round(num * 4) / 4; // quarter increments
+  counts[row] = Math.max(0, rounded);
+  const input = document.getElementById('c-' + row);
+  if (input) input.value = counts[row];
+  updateStats();
+  updateRowStyle(row);
+}
+
+function updateRowStyle(row) {
+  const item = ITEMS.find(i => i.row === row);
+  if (!item) return;
+  const input = document.getElementById('c-' + row);
+  const rowEl = document.getElementById('r-' + row);
+  if (!input || !rowEl) return;
+  const val = getCount(row);
+  const isLow = val !== '' && parseFloat(val) < item.par;
+  input.className = 'count-input' + (isLow ? ' low' : val !== '' ? ' ok' : '');
+  rowEl.className = 'item-row' + (isLow ? ' low' : ' ok');
+}
+
+function updateStats() {
+  const counted = ITEMS.filter(i => getCount(i.row) !== '').length;
+  const low = ITEMS.filter(i => {
+    const v = getCount(i.row);
+    return v !== '' && parseFloat(v) < i.par;
+  }).length;
+  document.getElementById('stat-total').textContent = ITEMS.length;
+  document.getElementById('stat-counted').textContent = counted;
+  document.getElementById('stat-low').textContent = low;
+}
+
+function toggleSection(secId) {
+  if (collapsedSections.has(secId)) {
+    collapsedSections.delete(secId);
+  } else {
+    collapsedSections.add(secId);
+  }
+  renderList();
+}
+
+function toggleFilter() {
+  filterLow = !filterLow;
+  document.getElementById('filter-low').classList.toggle('active', filterLow);
+  renderList();
+}
+
+function renderList() {
+  const q = (document.getElementById('search').value || '').toLowerCase();
+  const list = document.getElementById('list');
+  const sections = [...new Set(ITEMS.map(i => i.section))];
+  let html = '';
+
+  sections.forEach(section => {
+    let items = ITEMS.filter(i => i.section === section);
+    if (q) items = items.filter(i => i.item.toLowerCase().includes(q) || i.uom.toLowerCase().includes(q));
+    if (filterLow) items = items.filter(i => {
+      const v = getCount(i.row);
+      return v !== '' && parseFloat(v) < i.par;
+    });
+    if (!items.length) return;
+
+    const secId = section.replace(/\s+/g,'_');
+    const isCollapsed = collapsedSections.has(secId);
+    html += `<div class="section-hdr${isCollapsed?' collapsed':''}" onclick="toggleSection('${secId.replace(/'/g,"\\'")}')"><div style="display:flex;align-items:center;gap:8px"><span class="section-title">${section}</span><span class="section-count">${items.length} items</span></div><span class="section-chevron">▼</span></div>`;
+    html += `<div class="section-items${isCollapsed?' collapsed':''}" id="sec-${secId}">`;
+    items.forEach(i => {
+      const val = getCount(i.row);
+      const isLow = val !== '' && parseFloat(val) < i.par;
+      const parTxt = i.par > 0 ? `par: ${i.par}` : '';
+      html += `<div class="item-row${isLow ? ' low' : ' ok'}" id="r-${i.row}">
+        <div class="item-info">
+          <div class="item-name">${i.item}</div>
+          <div class="item-meta"><span class="item-uom">${i.uom}</span>${parTxt ? ` &nbsp;·&nbsp; <span class="item-par${isLow ? ' low' : val !== '' ? ' ok' : ''}">${parTxt}</span>` : ''}</div>
+        </div>
+        <div class="count-wrap">
+          <button class="count-btn" onclick="stepCount(${i.row},-0.25)">−</button>
+          <input class="count-input${isLow ? ' low' : val !== '' ? ' ok' : ''}" id="c-${i.row}" type="number" min="0" step="0.25" value="${val}" placeholder="—" oninput="setCount(${i.row}, this.value)">
+          <button class="count-btn" onclick="stepCount(${i.row},0.25)">+</button>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  if (!html) html = '<div class="empty">No items match your search.</div>';
+  list.innerHTML = html;
+}
+
+// ── SYNC ────────────────────────────────────────────
+function startSync() {
+  const counted = ITEMS.filter(i => getCount(i.row) !== '').length;
+  if (!counted) { showToast('No counts to sync yet', 'red'); return; }
+  if (CLIENT_ID === 'PASTE_YOUR_CLIENT_ID_HERE') { showToast('Client ID not configured', 'red'); return; }
+  document.getElementById('auth-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('auth-modal').classList.remove('open');
+}
+
+function doAuth() {
+  closeModal();
+  if (!tokenClient) { showToast('Google auth not loaded', 'red'); return; }
+  if (accessToken) { pushToSheets(); return; }
+  tokenClient.requestAccessToken();
+}
+
+async function pushToSheets() {
+  const btn = document.getElementById('sync-btn');
+  btn.textContent = 'Syncing...';
+  btn.disabled = true;
+  btn.className = 'sync-btn syncing';
+
+  // Build batch update — only rows with counts entered
+  const data = ITEMS
+    .filter(i => getCount(i.row) !== '')
+    .map(i => ({
+      range: `${SHEET_TAB}!D${i.row}`,
+      values: [[getCount(i.row)]]
+    }));
+
+  try {
+    const resp = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + accessToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data })
+      }
+    );
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || resp.statusText);
+    }
+
+    btn.textContent = 'Synced ✓';
+    btn.className = 'sync-btn success';
+    showToast(`${data.length} counts synced to Google Sheets`, 'green');
+    setTimeout(() => {
+      btn.textContent = 'Sync to Sheet';
+      btn.disabled = false;
+      btn.className = 'sync-btn';
+    }, 3000);
+
+  } catch(e) {
+    btn.textContent = 'Sync Failed';
+    btn.className = 'sync-btn error';
+    btn.disabled = false;
+    showToast('Sync failed: ' + e.message, 'red');
+    accessToken = null; // force re-auth next time
+    setTimeout(() => {
+      btn.textContent = 'Sync to Sheet';
+      btn.className = 'sync-btn';
+    }, 3000);
+  }
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.className = 'toast', 3000);
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('footer-date').textContent =
+    new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).toUpperCase();
+  updateStats();
+  renderList();
+  loadGIS();
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+}
+</script>
+</body>
+</html>

@@ -1,9 +1,10 @@
-const CACHE = 'gtops-v1';
+const CACHE = 'gtops-v3';
 const FILES = [
   '/',
   '/index.html',
   '/labor.html',
   '/tasks.html',
+  '/inventory.html',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
