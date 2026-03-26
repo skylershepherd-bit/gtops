@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
+<title>GT Ops — Sales Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#000;--g950:#0a0a0a;--g900:#111;--g800:#1a1a1a;
+  --g700:#2a2a2a;--g600:#3a3a3a;--g400:#666;--g300:#888;
+  --yellow:#f5e014;--yd:#c9b800;
+  --red:#e53e3e;--amber:#e8922a;--green:#38a169;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+html{font-size:16px}
+body{background:var(--black);color:#d4d4d4;font-family:var(--sans);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+.topnav{position:fixed;top:0;left:0;right:0;z-index:200;height:52px;background:var(--g950);border-bottom:1px solid var(--g700);display:flex;align-items:center;padding:0 16px}
+.back-btn{display:flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;color:var(--g300);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:0;margin-right:12px;text-decoration:none;flex-shrink:0}
+.back-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.back-btn:hover{color:#fff}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-logo-mark{width:28px;height:28px;background:var(--yellow);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.nav-company{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.nav-divider{width:1px;height:20px;background:var(--g700);margin:0 14px}
+.nav-product{font-size:12px;color:var(--g300)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.nav-tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--g400);background:var(--g800);border:1px solid var(--g700);border-radius:4px;padding:3px 8px;white-space:nowrap}
+.refresh-btn{background:var(--g800);border:1px solid var(--g700);border-radius:6px;color:var(--g300);width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.refresh-btn:hover{background:var(--g700);color:#fff}
+.refresh-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.refresh-btn.spinning svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.page{padding-top:52px;min-height:100vh}
+
+.range-bar{background:var(--g900);border-bottom:1px solid var(--g700);padding:0 16px;display:flex;gap:0;overflow-x:auto}
+.range-tab{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--g400);padding:14px 16px;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.range-tab:hover{color:#fff}
+.range-tab.active{color:var(--yellow);border-bottom-color:var(--yellow)}
+
+.main{padding:20px 16px;max-width:960px;margin:0 auto}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:24px}
+.stat-card{background:var(--g900);border:1px solid var(--g700);border-radius:8px;padding:14px 16px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--g700)}
+.stat-card.up::before{background:var(--green)}
+.stat-card.down::before{background:var(--red)}
+.stat-card.ok::before{background:var(--green)}
+.stat-label{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--g400);margin-bottom:8px}
+.stat-value{font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.02em;line-height:1}
+.stat-sub{font-family:var(--mono);font-size:10px;margin-top:5px}
+.up{color:var(--green)}.down{color:var(--red)}.neutral{color:var(--g400)}
+
+.section-hdr{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.section-hdr-title{font-size:11px;font-weight:600;color:#fff;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.section-hdr-line{flex:1;height:1px;background:var(--g700)}
+
+.chart-card{background:var(--g900);border:1px solid var(--g700);border-radius:8px;padding:20px;margin-bottom:24px}
+.chart-legend{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--g400)}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+.table-wrap{background:var(--g900);border:1px solid var(--g700);border-radius:8px;margin-bottom:24px;overflow:hidden}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--g400);padding:10px 14px;text-align:left;border-bottom:1px solid var(--g700);background:var(--g950);white-space:nowrap}
+.data-table th.r{text-align:right}
+.data-table td{padding:10px 14px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none;font-weight:600;color:#fff;background:var(--g800)}
+.data-table tr:hover td{background:rgba(255,255,255,.02)}
+.r{text-align:right;font-family:var(--mono);font-size:12px}
+.td-date{font-weight:600;color:#fff}
+.var-up{color:var(--green);font-family:var(--mono);font-size:12px}
+.var-down{color:var(--red);font-family:var(--mono);font-size:12px}
+
+.loading{padding:60px 20px;text-align:center;color:var(--g400);font-family:var(--mono);font-size:12px}
+.error-card{background:rgba(229,62,62,.08);border:1px solid rgba(229,62,62,.3);border-radius:8px;padding:20px;margin-bottom:24px;font-family:var(--mono);font-size:12px;color:var(--red)}
+
+.report-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;padding:14px 0;border-top:1px solid var(--g700);margin-top:4px}
+.footer-text{font-family:var(--mono);font-size:10px;color:var(--g400)}
+.footer-brand{font-family:var(--mono);font-size:10px;color:var(--g600)}
+
+@media(max-width:768px){
+  html{font-size:16px}
+  .nav-divider,.nav-product{display:none}
+  .nav-logo{display:none}
+  .back-btn{display:flex}
+  .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .main{padding:14px 12px}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="back-btn" href="index.html">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>GT Ops
+  </a>
+  <div class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
+        <text x="14" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" fill="#000">GT</text>
+      </svg>
+    </div>
+    <span class="nav-company">Game Theory</span>
+  </div>
+  <div class="nav-divider"></div>
+  <span class="nav-product">Sales Dashboard</span>
+  <div class="nav-right">
+    <span class="nav-tag" id="nav-updated">—</span>
+    <button class="refresh-btn" id="refresh-btn" onclick="loadData()" title="Refresh">
+      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="range-bar">
+    <div class="range-tab active" onclick="setRange('week')" id="tab-week">This Week</div>
+    <div class="range-tab" onclick="setRange('month')" id="tab-month">This Month</div>
+    <div class="range-tab" onclick="setRange('3month')" id="tab-3month">3 Months</div>
+    <div class="range-tab" onclick="setRange('6month')" id="tab-6month">6 Months</div>
+  </div>
+
+  <div class="main">
+    <div id="content"><div class="loading">Loading data from 7shifts...</div></div>
+  </div>
+</div>
+
+<script>
+const TOKEN = 'PASTE_7SHIFTS_TOKEN_HERE';
+const API   = 'https://api.7shifts.com/v2';
+
+let companyId = null;
+let locationId = null;
+let currentRange = 'week';
+let salesChart = null;
+let varChart = null;
+
+function fmt$(n){ return '$' + Math.round(n).toLocaleString(); }
+function fmtPct(n){ return n.toFixed(1) + '%'; }
+function fmtVar(n){
+  const s = (n >= 0 ? '+' : '') + fmt$(n);
+  return `<span class="${n >= 0 ? 'var-up' : 'var-down'}">${s}</span>`;
+}
+
+function dateRange(range) {
+  const now = new Date();
+  const to = now.toISOString().split('T')[0];
+  let from;
+  if (range === 'week') {
+    const d = new Date(now); d.setDate(d.getDate() - 6);
+    from = d.toISOString().split('T')[0];
+  } else if (range === 'month') {
+    from = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  } else if (range === '3month') {
+    const d = new Date(now); d.setMonth(d.getMonth() - 3);
+    from = d.toISOString().split('T')[0];
+  } else {
+    const d = new Date(now); d.setMonth(d.getMonth() - 6);
+    from = d.toISOString().split('T')[0];
+  }
+  return { from, to };
+}
+
+function setRange(r) {
+  currentRange = r;
+  ['week','month','3month','6month'].forEach(x => {
+    document.getElementById('tab-'+x).classList.toggle('active', x === r);
+  });
+  loadData();
+}
+
+async function apiFetch(path) {
+  const res = await fetch(API + path, {
+    headers: { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json();
+}
+
+async function getCompany() {
+  if (companyId) return;
+  const data = await apiFetch('/v2/company');
+  companyId = data.data?.id || data.data?.[0]?.id;
+  locationId = data.data?.locations?.[0]?.id || data.data?.[0]?.locations?.[0]?.id;
+  if (!companyId) {
+    const me = await apiFetch('/v2/whoami');
+    companyId = me.data?.company_id;
+  }
+}
+
+async function loadData() {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  document.getElementById('content').innerHTML = '<div class="loading">Loading data from 7shifts...</div>';
+
+  try {
+    await getCompany();
+    const { from, to } = dateRange(currentRange);
+    const report = await apiFetch(`/v2/reports/daily_sales_and_labor?company_id=${companyId}&start_date=${from}&end_date=${to}`);
+    renderDashboard(report.data || report);
+    document.getElementById('nav-updated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  } catch(e) {
+    document.getElementById('content').innerHTML = `
+      <div class="error-card">
+        Failed to load data from 7shifts: ${e.message}<br><br>
+        Check that your API token is correct and has access to reporting endpoints.
+      </div>`;
+  }
+  btn.classList.remove('spinning');
+}
+
+function renderDashboard(data) {
+  if (!data || !data.length) {
+    document.getElementById('content').innerHTML = '<div class="loading">No data available for this period.</div>';
+    return;
+  }
+
+  // Filter out any total rows
+  const rows = data.filter(r => r.date || r.day);
+
+  // Aggregate totals
+  let totalActual=0, totalProjected=0, totalLabor=0, totalScheduled=0, totalHours=0;
+  rows.forEach(r => {
+    totalActual    += parseFloat(r.total_sales || r.actual_sales || 0);
+    totalProjected += parseFloat(r.projected_sales || 0);
+    totalLabor     += parseFloat(r.actual_labor_cost || r.actual_labor || 0);
+    totalScheduled += parseFloat(r.scheduled_labor_cost || r.scheduled_labor || 0);
+    totalHours     += parseFloat(r.actual_hours || r.labor_hours || 0);
+  });
+
+  const salesVar  = totalActual - totalProjected;
+  const laborPct  = totalActual > 0 ? (totalLabor / totalActual) * 100 : 0;
+  const avgSplh   = totalHours > 0 ? totalActual / totalHours : 0;
+  const laborVar  = totalLabor - totalScheduled;
+
+  // Stat cards
+  const statsHTML = `
+    <div class="stat-grid">
+      <div class="stat-card ${salesVar >= 0 ? 'up' : 'down'}">
+        <div class="stat-label">Actual Sales</div>
+        <div class="stat-value">${fmt$(totalActual)}</div>
+        <div class="stat-sub ${salesVar >= 0 ? 'up' : 'down'}">${salesVar >= 0 ? '+' : ''}${fmt$(salesVar)} vs projected</div>
+      </div>
+      <div class="stat-card ${salesVar >= 0 ? 'up' : 'down'}">
+        <div class="stat-label">Projected Sales</div>
+        <div class="stat-value">${fmt$(totalProjected)}</div>
+        <div class="stat-sub neutral">Forecast period</div>
+      </div>
+      <div class="stat-card ${laborPct <= 25 ? 'ok' : laborPct <= 32 ? 'neutral' : 'down'}">
+        <div class="stat-label">Labor %</div>
+        <div class="stat-value">${fmtPct(laborPct)}</div>
+        <div class="stat-sub ${laborVar <= 0 ? 'up' : 'down'}">${laborVar <= 0 ? '' : '+'}${fmt$(laborVar)} vs scheduled</div>
+      </div>
+      <div class="stat-card ok">
+        <div class="stat-label">Avg SPLH</div>
+        <div class="stat-value">$${Math.round(avgSplh)}</div>
+        <div class="stat-sub neutral">Sales per labor hour</div>
+      </div>
+    </div>`;
+
+  // Chart data
+  const labels  = rows.map(r => {
+    const d = new Date(r.date || r.day);
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  });
+  const actuals    = rows.map(r => parseFloat(r.total_sales || r.actual_sales || 0));
+  const projected  = rows.map(r => parseFloat(r.projected_sales || 0));
+  const variances  = rows.map(r => {
+    const a = parseFloat(r.total_sales || r.actual_sales || 0);
+    const p = parseFloat(r.projected_sales || 0);
+    return a - p;
+  });
+
+  // Table rows
+  let tableRows = '';
+  rows.forEach(r => {
+    const actual = parseFloat(r.total_sales || r.actual_sales || 0);
+    const proj   = parseFloat(r.projected_sales || 0);
+    const variance = actual - proj;
+    const labor  = parseFloat(r.actual_labor_cost || r.actual_labor || 0);
+    const lPct   = actual > 0 ? (labor/actual*100).toFixed(1) : '—';
+    const splh   = parseFloat(r.actual_hours || r.labor_hours || 0);
+    const splhVal = splh > 0 ? '$' + Math.round(actual/splh) : '—';
+    const d = new Date(r.date || r.day);
+    const dateStr = d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    tableRows += `<tr>
+      <td class="td-date">${dateStr}</td>
+      <td class="r">${fmt$(actual)}</td>
+      <td class="r">${fmt$(proj)}</td>
+      <td class="r">${fmtVar(variance)}</td>
+      <td class="r">${fmt$(labor)}</td>
+      <td class="r">${lPct}%</td>
+      <td class="r">${splhVal}</td>
+    </tr>`;
+  });
+
+  // Totals row
+  tableRows += `<tr>
+    <td class="td-date">Total</td>
+    <td class="r">${fmt$(totalActual)}</td>
+    <td class="r">${fmt$(totalProjected)}</td>
+    <td class="r">${fmtVar(salesVar)}</td>
+    <td class="r">${fmt$(totalLabor)}</td>
+    <td class="r">${fmtPct(laborPct)}</td>
+    <td class="r">$${Math.round(avgSplh)}</td>
+  </tr>`;
+
+  document.getElementById('content').innerHTML = `
+    ${statsHTML}
+
+    <div class="section-hdr"><span class="section-hdr-title">Sales vs Projected</span><div class="section-hdr-line"></div>
+      <div style="display:flex;gap:14px">
+        <div class="legend-item"><div class="legend-dot" style="background:#f5e014"></div>Actual</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3a3a3a"></div>Projected</div>
+      </div>
+    </div>
+    <div class="chart-card"><div style="position:relative;height:220px"><canvas id="sales-chart"></canvas></div></div>
+
+    <div class="section-hdr"><span class="section-hdr-title">Variance by Day</span><div class="section-hdr-line"></div></div>
+    <div class="chart-card"><div style="position:relative;height:160px"><canvas id="var-chart"></canvas></div></div>
+
+    <div class="section-hdr"><span class="section-hdr-title">Daily Breakdown</span><div class="section-hdr-line"></div></div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr>
+          <th>Date</th><th class="r">Actual</th><th class="r">Projected</th>
+          <th class="r">Variance</th><th class="r">Labor</th>
+          <th class="r">Labor %</th><th class="r">SPLH</th>
+        </tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>
+
+    <div class="report-footer">
+      <span class="footer-text" id="footer-ts"></span>
+      <span class="footer-brand">Game Theory · Sales Dashboard</span>
+    </div>`;
+
+  document.getElementById('footer-ts').textContent =
+    new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).toUpperCase();
+
+  // Sales chart
+  if (salesChart) { salesChart.destroy(); salesChart = null; }
+  salesChart = new Chart(document.getElementById('sales-chart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Actual', data:actuals, backgroundColor:'rgba(245,224,20,.8)', borderColor:'#f5e014', borderWidth:1 },
+        { label:'Projected', data:projected, backgroundColor:'rgba(58,58,58,.6)', borderColor:'#3a3a3a', borderWidth:1 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1a1a1a', borderColor:'#2a2a2a', borderWidth:1, titleColor:'#666', bodyColor:'#d4d4d4', titleFont:{family:'IBM Plex Mono',size:10}, bodyFont:{family:'IBM Plex Mono',size:11}, padding:10, callbacks:{ label: ctx => ` ${ctx.dataset.label}: $${Math.round(ctx.parsed.y).toLocaleString()}` } } },
+      scales:{ y:{ ticks:{callback:v=>'$'+Math.round(v/1000)+'k',color:'#444',font:{family:'IBM Plex Mono',size:10}}, grid:{color:'#1a1a1a'}, border:{display:false} }, x:{ ticks:{color:'#444',font:{family:'IBM Plex Mono',size:10},maxRotation:45}, grid:{display:false}, border:{display:false} } }
+    }
+  });
+
+  // Variance chart
+  if (varChart) { varChart.destroy(); varChart = null; }
+  varChart = new Chart(document.getElementById('var-chart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets:[{
+        label:'Variance',
+        data: variances,
+        backgroundColor: variances.map(v => v >= 0 ? 'rgba(56,161,105,.8)' : 'rgba(229,62,62,.8)'),
+        borderColor:     variances.map(v => v >= 0 ? '#38a169' : '#e53e3e'),
+        borderWidth:1
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1a1a1a', borderColor:'#2a2a2a', borderWidth:1, titleColor:'#666', bodyColor:'#d4d4d4', titleFont:{family:'IBM Plex Mono',size:10}, bodyFont:{family:'IBM Plex Mono',size:11}, padding:10, callbacks:{ label: ctx => ` ${ctx.parsed.y >= 0 ? '+' : ''}$${Math.round(ctx.parsed.y).toLocaleString()}` } } },
+      scales:{ y:{ ticks:{callback:v=>(v>=0?'+':'')+Math.round(v/1000)+'k',color:'#444',font:{family:'IBM Plex Mono',size:10}}, grid:{color:'#1a1a1a'}, border:{display:false} }, x:{ ticks:{color:'#444',font:{family:'IBM Plex Mono',size:10},maxRotation:45}, grid:{display:false}, border:{display:false} } }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', loadData);
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+}
+</script>
+</body>
+</html>
