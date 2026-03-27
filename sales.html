@@ -135,8 +135,7 @@ body{background:var(--black);color:#d4d4d4;font-family:var(--sans);line-height:1
 </div>
 
 <script>
-const TOKEN = '37306664396131372d353634392d343464392d613537352d303261666531316531633131';
-const API   = 'https://api.7shifts.com/v2';
+const PROXY = '/.netlify/functions/shifts';
 
 let companyId = null;
 let locationId = null;
@@ -179,9 +178,7 @@ function setRange(r) {
 }
 
 async function apiFetch(path) {
-  const res = await fetch(API + path, {
-    headers: { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }
-  });
+  const res = await fetch(PROXY + '?path=' + encodeURIComponent(path));
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
 }
