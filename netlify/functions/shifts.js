@@ -1,40 +1,39 @@
-const TOKEN = process.env.SHIFTS_TOKEN || 'PASTE_7SHIFTS_TOKEN_HERE';
-const API   = 'https://api.7shifts.com/v2';
+export default async (req, context) => {
+  const TOKEN = Netlify.env.get('SHIFTS_TOKEN') || '';
+  const API   = 'https://api.7shifts.com/v2';
 
-exports.handler = async (event) => {
-  const headers = {
+  const url = new URL(req.url);
+  const path = url.searchParams.get('path') || '/whoami';
+
+  const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json',
   };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+  if (req.method === 'OPTIONS') {
+    return new Response('', { status: 200, headers: corsHeaders });
   }
 
-  const path = event.queryStringParameters?.path || '/v2/whoami';
-
   try {
-    const url = API + path;
-    const resp = await fetch(url, {
+    const resp = await fetch(API + path, {
       headers: {
         'Authorization': 'Bearer ' + TOKEN,
         'Content-Type': 'application/json',
       }
     });
 
-    const data = await resp.json();
-
-    return {
-      statusCode: resp.status,
-      headers,
-      body: JSON.stringify(data),
-    };
+    const data = await resp.text();
+    return new Response(data, {
+      status: resp.status,
+      headers: corsHeaders,
+    });
   } catch (e) {
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: e.message }),
-    };
+    return new Response(JSON.stringify({ error: e.message }), {
+      status: 500,
+      headers: corsHeaders,
+    });
   }
 };
+
+export const config = { path: '/.netlify/functions/shifts' };
