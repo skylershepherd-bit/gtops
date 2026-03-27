@@ -185,13 +185,10 @@ async function apiFetch(path) {
 
 async function getCompany() {
   if (companyId) return;
-  const data = await apiFetch('/v2/company');
-  companyId = data.data?.id || data.data?.[0]?.id;
-  locationId = data.data?.locations?.[0]?.id || data.data?.[0]?.locations?.[0]?.id;
-  if (!companyId) {
-    const me = await apiFetch('/v2/whoami');
-    companyId = me.data?.company_id;
-  }
+  const me = await apiFetch('/whoami');
+  companyId = me.data?.company_id;
+  const locs = await apiFetch('/locations?company_id=' + companyId);
+  locationId = locs.data?.[0]?.id;
 }
 
 async function loadData() {
@@ -202,7 +199,7 @@ async function loadData() {
   try {
     await getCompany();
     const { from, to } = dateRange(currentRange);
-    const report = await apiFetch(`/v2/reports/daily_sales_and_labor?company_id=${companyId}&start_date=${from}&end_date=${to}`);
+    const report = await apiFetch(`/reports/daily_sales_and_labor?company_id=${companyId}&start_date=${from}&end_date=${to}`);
     renderDashboard(report.data || report);
     document.getElementById('nav-updated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
   } catch(e) {
