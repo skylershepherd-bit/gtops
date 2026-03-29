@@ -4,352 +4,203 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#ffffff">
 <title>GT Ops — Table Coverage</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --black:#000;--g950:#0a0a0a;--g900:#111;--g800:#1a1a1a;
-  --g700:#2a2a2a;--g600:#3a3a3a;--g400:#666;--g300:#888;
-  --yellow:#f5e014;--yd:#c9b800;
-  --red:#e53e3e;--amber:#e8922a;--green:#38a169;--blue:#3182ce;
-  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
-  --mono:'IBM Plex Mono',monospace;
+  --bg:#f4f5f7;--surface:#fff;--surface2:#f9fafb;--border:#e4e7ec;--border2:#d0d5dd;
+  --text:#101828;--text2:#344054;--muted:#667085;--muted2:#98a2b3;
+  --accent:#c9a800;--accent-dark:#a38600;--accent-light:#fffbe6;--accent-mid:#fde68a;--accent-text:#78350f;
+  --green:#079455;--green-bg:#ecfdf3;--green-bd:#abefc6;
+  --red:#d92d20;--red-bg:#fef3f2;--red-bd:#fecdca;
+  --amber:#b54708;--amber-bg:#fffaeb;--amber-bd:#fedf89;
+  --blue:#1d4ed8;--blue-bg:#eff3ff;--blue-bd:#c7d5fa;
+  --sidebar-w:56px;--topnav-h:52px;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.06);--shadow:0 1px 3px rgba(16,24,40,.1),0 1px 2px rgba(16,24,40,.06);
+  --r:10px;--sans:'Bricolage Grotesque',system-ui,sans-serif;--mono:'Geist Mono',monospace;
 }
-html{font-size:16px}
-body{background:var(--black);color:#d4d4d4;font-family:var(--sans);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+html{font-size:14px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased;display:flex}
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:12px 0;position:fixed;top:0;left:0;bottom:0;z-index:200;gap:2px}
+.sidebar-logo{width:36px;height:36px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;flex-shrink:0;overflow:hidden}
+.nav-btn{width:40px;height:40px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;position:relative;text-decoration:none}
+.nav-btn:hover{background:var(--surface2);color:var(--text)}.nav-btn.active{background:var(--accent-light);color:var(--accent-dark)}
+.nav-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.nav-tooltip{position:absolute;left:calc(var(--sidebar-w) + 8px);background:#101828;color:#fff;font-size:11px;padding:4px 9px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;font-family:var(--mono);z-index:300}
+.nav-btn:hover .nav-tooltip{opacity:1}
+.main-wrap{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:var(--topnav-h);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm)}
+.topbar-left{display:flex;align-items:center;gap:8px}
+.topbar-logo{display:none}.topbar-logo-mark{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.topbar-name{font-weight:700;font-size:15px;letter-spacing:-.01em}
+.topbar-sep{color:var(--muted2);margin:0 4px}.topbar-page{color:var(--muted);font-size:14px;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;font-family:var(--mono);background:var(--accent-light);color:var(--accent-text);border:1px solid var(--accent-mid)}
+.page-content{padding:24px 24px 64px;max-width:1100px;width:100%;margin:0 auto}
+.page-header{margin-bottom:22px}.page-header h1{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.page-header p{color:var(--muted);font-size:12px;margin-top:3px;font-family:var(--mono)}
+.sl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px;font-family:var(--mono);display:flex;align-items:center;gap:8px}
+.sl::after{content:'';flex:1;height:1px;background:var(--border)}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--border)}
+.kpi.up::before{background:var(--green)}.kpi.down::before{background:var(--red)}.kpi.ok::before{background:var(--green)}.kpi.accent::before{background:var(--accent)}
+.kpi-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px;font-family:var(--mono)}
+.kpi-val{font-size:24px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.kpi-sub{margin-top:6px;font-size:11px;color:var(--muted)}.kpi-sub.up{color:var(--green)}.kpi-sub.down{color:var(--red)}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm);margin-bottom:16px}
+.panel-hd{padding:14px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ph-title{font-size:13px;font-weight:600}.ph-sub{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.panel-bd{padding:18px}
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;font-family:var(--mono);white-space:nowrap}
+.badge.green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.badge.red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.badge.amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd)}
+.badge.yellow{background:var(--accent-light);color:var(--accent-text);border:1px solid var(--accent-mid)}
+.gt-table{width:100%;border-collapse:collapse}
+.gt-table th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);font-family:var(--mono);white-space:nowrap}
+.gt-table th.r{text-align:right}
+.gt-table td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+.gt-table tr:last-child td{border-bottom:none}.gt-table tr:hover td{background:var(--surface2)}
+.td-r{text-align:right;font-family:var(--mono);font-size:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--accent);color:#000}.btn-primary:hover{background:var(--accent-dark)}
+.btn-ghost{background:var(--surface);border:1px solid var(--border);color:var(--text2)}.btn-ghost:hover{background:var(--surface2)}
+.var-up{color:var(--green);font-family:var(--mono);font-size:12px}.var-down{color:var(--red);font-family:var(--mono);font-size:12px}
+.loading{padding:60px 20px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px}
+.error-card{background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;padding:16px 18px;margin-bottom:16px;font-family:var(--mono);font-size:12px;color:var(--red)}
+.page-footer{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--border);margin-top:8px}
+.footer-text{font-family:var(--mono);font-size:10px;color:var(--muted2)}
+.mobile-nav{display:none}
+@media(max-width:768px){
+  html{font-size:16px}body{display:block}.sidebar{display:none}.main-wrap{margin-left:0}
+  .topbar-logo{display:flex;align-items:center;gap:8px;margin-right:4px}
+  .topbar-sep,.topbar-page{display:none}
+  .page-content{padding:16px 14px 80px}
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface);border-top:1px solid var(--border);height:56px;box-shadow:0 -1px 3px rgba(16,24,40,.08)}
+  .mobile-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:9px;font-family:var(--mono);font-weight:600;letter-spacing:.04em;text-transform:uppercase;text-decoration:none}
+  .mobile-nav-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+  .mobile-nav-btn.active{color:var(--accent-dark)}
+}
 
-/* NAV */
-.topnav{position:fixed;top:0;left:0;right:0;z-index:200;height:52px;background:var(--g950);border-bottom:1px solid var(--g700);display:flex;align-items:center;padding:0 16px}
-.back-btn{display:flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;color:var(--g300);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:0;margin-right:12px;text-decoration:none;flex-shrink:0}
-.back-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.back-btn:hover{color:#fff}
-.nav-logo{display:flex;align-items:center;gap:10px}
-.nav-logo-mark{width:28px;height:28px;background:var(--yellow);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.nav-company{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff}
-.nav-divider{width:1px;height:20px;background:var(--g700);margin:0 14px}
-.nav-product{font-size:12px;color:var(--g300)}
-.nav-right{margin-left:auto}
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.nav-status{font-family:var(--mono);font-size:10px;color:var(--g400);display:flex;align-items:center}
-
-/* PAGE */
-.page{padding-top:52px;min-height:100vh;max-width:520px;margin:0 auto;padding-left:20px;padding-right:20px}
-
-/* MAIN STATUS CARD */
-.status-card{background:var(--g900);border:1px solid var(--g700);border-radius:12px;padding:28px 24px;margin:28px 0 20px;text-align:center;position:relative;overflow:hidden;transition:border-color .3s}
+.cov-page{max-width:520px;margin:0 auto}
+.status-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px 24px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow);transition:border-color .3s}
 .status-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;transition:background .3s}
-.status-card.slow::before{background:var(--green)}
-.status-card.moderate::before{background:var(--amber)}
-.status-card.busy::before{background:var(--red)}
-.status-card.full::before{background:#9b2c2c}
-.status-card.closed::before{background:var(--g600)}
-
-.status-icon{font-size:48px;margin-bottom:16px;display:block}
-.status-label{font-size:28px;font-weight:700;color:#fff;letter-spacing:-0.02em;margin-bottom:6px}
-.status-wait{font-family:var(--mono);font-size:14px;color:var(--g400);margin-bottom:0}
-
-/* STATUS BUTTONS */
-.section-title{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--g400);margin-bottom:12px}
+.status-card.slow::before{background:var(--green)}.status-card.moderate::before{background:var(--amber)}.status-card.busy::before{background:var(--red)}.status-card.full::before{background:#9b2c2c}.status-card.closed::before{background:var(--muted2)}
+.status-icon{font-size:44px;margin-bottom:14px;display:block}
+.status-label{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-.02em;margin-bottom:6px}
+.status-wait-txt{font-family:var(--mono);font-size:13px;color:var(--muted)}
 .status-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-.status-btn{background:var(--g900);border:1px solid var(--g700);border-radius:10px;padding:16px 12px;cursor:pointer;transition:all .15s;text-align:center}
-.status-btn:hover{background:var(--g800);border-color:var(--g600)}
-.status-btn.active{border-width:2px}
-.status-btn.active.slow{border-color:var(--green);background:rgba(56,161,105,.08)}
-.status-btn.active.moderate{border-color:var(--amber);background:rgba(232,146,42,.08)}
-.status-btn.active.busy{border-color:var(--red);background:rgba(229,62,62,.08)}
-.status-btn.active.full{border-color:#9b2c2c;background:rgba(155,44,44,.12)}
-.status-btn.active.closed{border-color:var(--g500);background:rgba(255,255,255,.04)}
-.status-btn-icon{font-size:24px;margin-bottom:6px}
-.status-btn-label{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px}
-.status-btn-desc{font-family:var(--mono);font-size:10px;color:var(--g400)}
-
-/* WAIT TIME */
-.wait-section{background:var(--g900);border:1px solid var(--g700);border-radius:10px;padding:18px 20px;margin-bottom:20px}
-.wait-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.wait-label{font-size:14px;font-weight:500;color:#fff}
-.wait-sub{font-family:var(--mono);font-size:10px;color:var(--g400);margin-top:2px}
-.wait-val{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--yellow);min-width:64px;text-align:right}
-
-/* CLOSED TOGGLE */
-.closed-row{background:var(--g900);border:1px solid var(--g700);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
-.closed-label{font-size:14px;font-weight:500;color:#fff}
+.status-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 12px;cursor:pointer;text-align:center;transition:all .15s;box-shadow:var(--shadow-sm)}
+.status-btn:hover{background:var(--surface2);border-color:var(--border2)}
+.status-btn.active.slow{border:2px solid var(--green);background:var(--green-bg)}
+.status-btn.active.moderate{border:2px solid var(--amber);background:var(--amber-bg)}
+.status-btn.active.busy{border:2px solid var(--red);background:var(--red-bg)}
+.status-btn.active.full{border:2px solid #9b2c2c;background:#fff5f5}
+.status-btn-icon{font-size:22px;margin-bottom:6px}
+.status-btn-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.status-btn-desc{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.wait-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.wait-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.wait-label{font-size:14px;font-weight:600;color:var(--text)}
+.wait-val{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--accent-dark)}
+.wait-slider{width:100%;height:6px;border-radius:3px;appearance:none;outline:none;cursor:pointer;accent-color:var(--accent)}
+.wait-ticks{display:flex;justify-content:space-between;margin-top:5px}
+.wait-tick{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.closed-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)}
 .toggle{position:relative;width:48px;height:26px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;inset:0;background:var(--g700);border-radius:13px;cursor:pointer;transition:.3s}
-.toggle-slider::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
-.toggle input:checked + .toggle-slider{background:var(--red)}
-.toggle input:checked + .toggle-slider::before{transform:translateX(22px)}
-
-/* PUBLISH BTN */
-.publish-btn{width:100%;background:var(--yellow);color:var(--black);border:none;border-radius:10px;padding:16px;font-family:var(--sans);font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s;margin-bottom:12px}
-.publish-btn:hover{opacity:.88}
+.toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:13px;cursor:pointer;transition:.3s}
+.toggle-slider::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;box-shadow:var(--shadow-sm)}
+.toggle input:checked+.toggle-slider{background:var(--red)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(22px)}
+.publish-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:var(--r);padding:14px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+.publish-btn:hover{background:var(--accent-dark)}
 .publish-btn:disabled{opacity:.4;cursor:default}
-.publish-btn.saving{background:var(--g700);color:var(--g300)}
+.publish-btn.saving{background:var(--surface2);color:var(--muted)}
 .publish-btn.saved{background:var(--green);color:#fff}
-
-/* WIDGET SECTION */
-.widget-card{background:var(--g900);border:1px solid var(--g700);border-radius:10px;padding:18px 20px;margin-bottom:28px}
-.widget-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:4px}
-.widget-sub{font-size:12px;color:var(--g400);margin-bottom:14px}
-.code-block{background:var(--g950);border:1px solid var(--g700);border-radius:6px;padding:12px 14px;font-family:var(--mono);font-size:11px;color:#a8d8a8;word-break:break-all;line-height:1.6;margin-bottom:10px}
-.copy-btn{background:var(--g800);border:1px solid var(--g700);border-radius:6px;padding:7px 14px;font-family:var(--mono);font-size:10px;color:var(--g300);cursor:pointer;transition:all .15s;letter-spacing:.06em;text-transform:uppercase}
-.copy-btn:hover{background:var(--g700);color:#fff}
-.copy-btn.copied{background:rgba(56,161,105,.15);border-color:var(--green);color:var(--green)}
-
-/* TOAST */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--g800);border:1px solid var(--g700);border-radius:8px;padding:10px 20px;font-family:var(--mono);font-size:12px;color:#fff;z-index:400;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.widget-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:28px;box-shadow:var(--shadow-sm)}
+.widget-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.widget-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.code-block{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-family:var(--mono);font-size:11px;color:var(--blue);word-break:break-all;line-height:1.6;margin-bottom:10px}
+.copy-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 14px;font-family:var(--mono);font-size:10px;color:var(--text2);cursor:pointer;transition:all .15s;letter-spacing:.06em;text-transform:uppercase}
+.copy-btn:hover{background:var(--surface2)}
+.copy-btn.copied{background:var(--green-bg);border-color:var(--green-bd);color:var(--green)}
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;border-radius:8px;padding:10px 20px;font-family:var(--mono);font-size:12px;z-index:400;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
-.toast.green{border-color:var(--green);color:var(--green)}
-.toast.red{border-color:var(--red);color:var(--red)}
-
-@media(max-width:768px){
-  .nav-divider,.nav-product{display:none}
-  .nav-logo{display:none}
-}
+.live-badge{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--green)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
 <body>
-
-<nav class="topnav">
-  <a class="back-btn" href="index.html">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>GT Ops
-  </a>
-  <div class="nav-logo">
-    <div class="nav-logo-mark">
-      <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
-        <text x="14" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" fill="#000">GT</text>
-      </svg>
+<nav class="sidebar"><div class="sidebar-logo"><svg viewBox="0 0 28 28" width="28" height="28"><text x="14" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" fill="#000">GT</text></svg></div><a class="nav-btn " href="index.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="nav-tooltip">Home</span></a><a class="nav-btn " href="labor.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="nav-tooltip">Labor Scheduler</span></a><a class="nav-btn " href="sales.html"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="nav-tooltip">Sales Dashboard</span></a><a class="nav-btn " href="inventory.html"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><span class="nav-tooltip">Inventory Count</span></a><a class="nav-btn " href="tasks.html"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="nav-tooltip">Task Report</span></a><a class="nav-btn active" href="coverage.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg><span class="nav-tooltip">Table Coverage</span></a></nav>
+<div class="main-wrap">
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo"><div class="topbar-logo-mark"><svg viewBox="0 0 28 28" width="20" height="20"><text x="14" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" fill="#000">GT</text></svg></div></div>
+    <span class="topbar-name">Game Theory</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-page">Table Coverage</span>
+  </div>
+  <div class="topbar-right"><div class="live-badge"><div class="live-dot"></div>Live</div></div>
+</header>
+  <div class="page-content cov-page">
+    <div class="page-header"><h1>Table Coverage</h1><p>Update live status for guests on your website</p></div>
+    <div class="status-card" id="status-card">
+      <span class="status-icon" id="status-icon">🟢</span>
+      <div class="status-label" id="status-label">Slow</div>
+      <div class="status-wait-txt" id="status-wait-display">No wait</div>
     </div>
-    <span class="nav-company">Game Theory</span>
-  </div>
-  <div class="nav-divider"></div>
-  <span class="nav-product">Table Coverage</span>
-  <div class="nav-right">
-    <span class="nav-status"><span class="live-dot"></span>Live</span>
-  </div>
-</nav>
-
-<div class="page">
-
-  <!-- CURRENT STATUS DISPLAY -->
-  <div class="status-card" id="status-card">
-    <span class="status-icon" id="status-icon">🟢</span>
-    <div class="status-label" id="status-label">Slow</div>
-    <div class="status-wait" id="status-wait-display">No wait</div>
-  </div>
-
-  <!-- STATUS SELECTOR -->
-  <div class="section-title">Set Current Status</div>
-  <div class="status-grid">
-    <button class="status-btn slow active" id="btn-slow" onclick="setStatus('slow')">
-      <div class="status-btn-icon">🟢</div>
-      <div class="status-btn-label">Slow</div>
-      <div class="status-btn-desc">Plenty of tables</div>
-    </button>
-    <button class="status-btn moderate" id="btn-moderate" onclick="setStatus('moderate')">
-      <div class="status-btn-icon">🟡</div>
-      <div class="status-btn-label">Moderate</div>
-      <div class="status-btn-desc">Some tables open</div>
-    </button>
-    <button class="status-btn busy" id="btn-busy" onclick="setStatus('busy')">
-      <div class="status-btn-icon">🔴</div>
-      <div class="status-btn-label">Busy</div>
-      <div class="status-btn-desc">Limited seating</div>
-    </button>
-    <button class="status-btn full" id="btn-full" onclick="setStatus('full')">
-      <div class="status-btn-icon">⛔</div>
-      <div class="status-btn-label">Full</div>
-      <div class="status-btn-desc">At capacity</div>
-    </button>
-  </div>
-
-  <!-- WAIT TIME -->
-  <div class="wait-section">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <div>
-        <div class="wait-label">Estimated Wait</div>
-        <div class="wait-sub">Shown to guests on your website</div>
-      </div>
-      <div class="wait-val" id="wait-display">No wait</div>
+    <div class="sl">Set Status</div>
+    <div class="status-grid">
+      <button class="status-btn slow active" id="btn-slow" onclick="setStatus('slow')"><div class="status-btn-icon">🟢</div><div class="status-btn-label">Slow</div><div class="status-btn-desc">Plenty of tables</div></button>
+      <button class="status-btn moderate" id="btn-moderate" onclick="setStatus('moderate')"><div class="status-btn-icon">🟡</div><div class="status-btn-label">Moderate</div><div class="status-btn-desc">Some tables open</div></button>
+      <button class="status-btn busy" id="btn-busy" onclick="setStatus('busy')"><div class="status-btn-icon">🔴</div><div class="status-btn-label">Busy</div><div class="status-btn-desc">Limited seating</div></button>
+      <button class="status-btn full" id="btn-full" onclick="setStatus('full')"><div class="status-btn-icon">⛔</div><div class="status-btn-label">Full</div><div class="status-btn-desc">At capacity</div></button>
     </div>
-    <input type="range" min="0" max="90" step="5" value="0" id="wait-slider"
-      style="width:100%;height:8px;appearance:none;background:var(--g700);border-radius:4px;outline:none;cursor:pointer;accent-color:var(--yellow)"
-      oninput="updateWaitSlider(this.value)">
-    <div style="display:flex;justify-content:space-between;margin-top:6px">
-      <span style="font-family:var(--mono);font-size:10px;color:var(--g400)">No wait</span>
-      <span style="font-family:var(--mono);font-size:10px;color:var(--g400)">45 min</span>
-      <span style="font-family:var(--mono);font-size:10px;color:var(--g400)">90 min</span>
+    <div class="wait-section">
+      <div class="wait-row"><div><div class="wait-label">Estimated Wait</div><div style="font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono)">Shown to guests on your website</div></div><div class="wait-val" id="wait-display">No wait</div></div>
+      <input type="range" class="wait-slider" id="wait-slider" min="0" max="90" step="5" value="0" oninput="updateWaitSlider(this.value)">
+      <div class="wait-ticks"><span class="wait-tick">No wait</span><span class="wait-tick">45 min</span><span class="wait-tick">90 min</span></div>
+    </div>
+    <div class="closed-row">
+      <div><div class="wait-label">Mark as Closed</div><div style="font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono)">Overrides all statuses on your website</div></div>
+      <label class="toggle"><input type="checkbox" id="closed-toggle" onchange="toggleClosed()"><span class="toggle-slider"></span></label>
+    </div>
+    <button class="publish-btn" id="publish-btn" onclick="publish()">Update Website Status</button>
+    <div class="widget-card">
+      <div class="widget-title">Website Widget</div>
+      <div class="widget-sub">Paste this one line of code anywhere on your website to show the live status to guests.</div>
+      <div class="code-block">&lt;script src="https://gametheoryops.netlify.app/widget.js"&gt;&lt;/script&gt;</div>
+      <button class="copy-btn" id="copy-btn" onclick="copyCode()">Copy code</button>
     </div>
   </div>
-
-  <!-- CLOSED TOGGLE -->
-  <div class="closed-row">
-    <div>
-      <div class="wait-label">Mark as Closed</div>
-      <div class="wait-sub" style="font-family:var(--mono);font-size:10px;color:var(--g400);margin-top:2px">Overrides all statuses on your website</div>
-    </div>
-    <label class="toggle">
-      <input type="checkbox" id="closed-toggle" onchange="toggleClosed()">
-      <span class="toggle-slider"></span>
-    </label>
-  </div>
-
-  <!-- PUBLISH -->
-  <button class="publish-btn" id="publish-btn" onclick="publish()">Update Website Status</button>
-
-  <!-- WIDGET CODE -->
-  <div class="widget-card">
-    <div class="widget-title">Website Widget</div>
-    <div class="widget-sub">Paste this one line of code anywhere on your website to show the live status to guests.</div>
-    <div class="code-block" id="widget-code">&lt;script src="https://gametheoryops.netlify.app/widget.js"&gt;&lt;/script&gt;</div>
-    <button class="copy-btn" id="copy-btn" onclick="copyCode()">Copy code</button>
-  </div>
-
 </div>
-
+<nav class="mobile-nav"><a class="mobile-nav-btn " href="index.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a><a class="mobile-nav-btn " href="labor.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Labor</a><a class="mobile-nav-btn " href="sales.html"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Sales</a><a class="mobile-nav-btn " href="inventory.html"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Inventory</a><a class="mobile-nav-btn active" href="coverage.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Coverage</a></nav>
 <div class="toast" id="toast"></div>
-
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
-
-const FB_URL = 'https://gt-ops-ce4fd-default-rtdb.firebaseio.com';
-
-const app = initializeApp({ databaseURL: FB_URL }, 'coverage');
-const db  = getDatabase(app);
-const statusRef = ref(db, 'coverage');
-
-let currentStatus = 'slow';
-let waitMinutes   = 0;
-let isClosed      = false;
-
-const STATUS_MAP = {
-  slow:     { icon:'🟢', label:'Slow',     wait:'No wait',    cls:'slow' },
-  moderate: { icon:'🟡', label:'Moderate', wait:'Short wait',  cls:'moderate' },
-  busy:     { icon:'🔴', label:'Busy',     wait:'Some wait',   cls:'busy' },
-  full:     { icon:'⛔', label:'Full',     wait:'Long wait',   cls:'full' },
-  closed:   { icon:'🚫', label:'Closed',   wait:'We\'re closed today', cls:'closed' },
-};
-
-function fmtWait(min) {
-  if (min <= 0) return 'No wait';
-  return min + ' min wait';
-}
-
-function setStatus(s) {
-  currentStatus = s;
-  document.querySelectorAll('.status-btn').forEach(b => {
-    b.classList.remove('active');
-  });
-  document.getElementById('btn-' + s).classList.add('active');
-  updateCard();
-}
-
-function updateWaitSlider(v) {
-  waitMinutes = parseInt(v);
-  document.getElementById('wait-display').textContent = fmtWait(waitMinutes);
-  updateCard();
-}
-
-function toggleClosed() {
-  isClosed = document.getElementById('closed-toggle').checked;
-  updateCard();
-}
-
-function updateCard() {
-  const s = isClosed ? 'closed' : currentStatus;
-  const m = STATUS_MAP[s];
-  const card = document.getElementById('status-card');
-  card.className = 'status-card ' + m.cls;
-  document.getElementById('status-icon').textContent = m.icon;
-  document.getElementById('status-label').textContent = m.label;
-  document.getElementById('status-wait-display').textContent =
-    isClosed ? "We're closed" : fmtWait(waitMinutes);
-}
-
-async function publish() {
-  const btn = document.getElementById('publish-btn');
-  btn.textContent = 'Updating...';
-  btn.disabled = true;
-  btn.className = 'publish-btn saving';
-
-  const s = isClosed ? 'closed' : currentStatus;
-  const payload = {
-    status: s,
-    label:  STATUS_MAP[s].label,
-    wait:   isClosed ? 0 : waitMinutes,
-    waitText: isClosed ? "We're closed" : fmtWait(waitMinutes),
-    icon:   STATUS_MAP[s].icon,
-    updatedAt: Date.now()
-  };
-
-  try {
-    await set(statusRef, payload);
-    btn.textContent = 'Updated ✓';
-    btn.className = 'publish-btn saved';
-    showToast('Website updated', 'green');
-    setTimeout(() => {
-      btn.textContent = 'Update Website Status';
-      btn.disabled = false;
-      btn.className = 'publish-btn';
-    }, 2500);
-  } catch(e) {
-    btn.textContent = 'Update Website Status';
-    btn.disabled = false;
-    btn.className = 'publish-btn';
-    showToast('Error: ' + e.message, 'red');
-  }
-}
-
-function copyCode() {
-  const code = document.getElementById('widget-code').textContent;
-  navigator.clipboard.writeText(code).then(() => {
-    const btn = document.getElementById('copy-btn');
-    btn.textContent = 'Copied!';
-    btn.className = 'copy-btn copied';
-    setTimeout(() => { btn.textContent = 'Copy code'; btn.className = 'copy-btn'; }, 2000);
-  });
-}
-
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (type ? ' ' + type : '');
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.className = 'toast', 3000);
-}
-
-// Load current status from Firebase on open
-onValue(statusRef, snap => {
-  const d = snap.val();
-  if (!d) return;
-  if (d.status === 'closed') {
-    isClosed = true;
-    document.getElementById('closed-toggle').checked = true;
-  } else {
-    currentStatus = d.status || 'slow';
-    document.getElementById('btn-' + currentStatus)?.classList.add('active');
-  }
-  waitMinutes = d.wait || 0;
-  document.getElementById('wait-display').textContent = fmtWait(waitMinutes);
-  updateCard();
-}, { onlyOnce: true });
-
-// Expose functions to global scope
-window.setStatus         = setStatus;
-  window.updateWaitSlider  = updateWaitSlider;
-window.adjustWait   = adjustWait;
-window.toggleClosed = toggleClosed;
-window.publish      = publish;
-window.copyCode     = copyCode;
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
-}
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import {getDatabase,ref,set,onValue} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+const app=initializeApp({databaseURL:'https://gt-ops-ce4fd-default-rtdb.firebaseio.com'},'coverage');
+const db=getDatabase(app);const statusRef=ref(db,'coverage');
+let currentStatus='slow',waitMinutes=0,isClosed=false;
+const STATUS_MAP={slow:{icon:'🟢',label:'Slow',cls:'slow'},moderate:{icon:'🟡',label:'Moderate',cls:'moderate'},busy:{icon:'🔴',label:'Busy',cls:'busy'},full:{icon:'⛔',label:'Full',cls:'full'},closed:{icon:'🚫',label:'Closed',cls:'closed'}};
+function fmtWait(m){return m<=0?'No wait':m+' min wait';}
+function setStatus(s){currentStatus=s;document.querySelectorAll('.status-btn').forEach(b=>b.classList.remove('active'));document.getElementById('btn-'+s).classList.add('active');updateCard();}
+function updateWaitSlider(v){waitMinutes=parseInt(v);document.getElementById('wait-display').textContent=fmtWait(waitMinutes);updateCard();}
+function toggleClosed(){isClosed=document.getElementById('closed-toggle').checked;updateCard();}
+function updateCard(){const s=isClosed?'closed':currentStatus;const m=STATUS_MAP[s];const card=document.getElementById('status-card');card.className='status-card '+m.cls;document.getElementById('status-icon').textContent=m.icon;document.getElementById('status-label').textContent=m.label;document.getElementById('status-wait-display').textContent=isClosed?"We're closed":fmtWait(waitMinutes);}
+async function publish(){const btn=document.getElementById('publish-btn');btn.textContent='Updating...';btn.disabled=true;btn.className='publish-btn saving';const s=isClosed?'closed':currentStatus;const payload={status:s,label:STATUS_MAP[s].label,wait:isClosed?0:waitMinutes,waitText:isClosed?"We're closed":fmtWait(waitMinutes),icon:STATUS_MAP[s].icon,updatedAt:Date.now()};try{await set(statusRef,payload);btn.textContent='Updated ✓';btn.className='publish-btn saved';showToast('Website updated');setTimeout(()=>{btn.textContent='Update Website Status';btn.disabled=false;btn.className='publish-btn';},2500);}catch(e){btn.textContent='Update Website Status';btn.disabled=false;btn.className='publish-btn';showToast('Error: '+e.message);}}
+function copyCode(){navigator.clipboard.writeText('<script src="https://gametheoryops.netlify.app/widget.js"><\/script>').then(()=>{const b=document.getElementById('copy-btn');b.textContent='Copied!';b.className='copy-btn copied';setTimeout(()=>{b.textContent='Copy code';b.className='copy-btn';},2000);});}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show';clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',3000);}
+onValue(statusRef,snap=>{const d=snap.val();if(!d)return;if(d.status==='closed'){isClosed=true;document.getElementById('closed-toggle').checked=true;}else{currentStatus=d.status||'slow';document.getElementById('btn-'+currentStatus)?.classList.add('active');}waitMinutes=d.wait||0;document.getElementById('wait-display').textContent=fmtWait(waitMinutes);document.getElementById('wait-slider').value=waitMinutes;updateCard();},{onlyOnce:true});
+window.setStatus=setStatus;window.updateWaitSlider=updateWaitSlider;window.toggleClosed=toggleClosed;window.publish=publish;window.copyCode=copyCode;
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js'));
 </script>
 </body>
 </html>

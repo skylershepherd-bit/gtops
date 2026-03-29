@@ -4,192 +4,176 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#ffffff">
 <title>GT Ops — Inventory Count</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --black:#000;--g950:#0a0a0a;--g900:#111;--g800:#1a1a1a;
-  --g700:#2a2a2a;--g600:#3a3a3a;--g400:#666;--g300:#888;
-  --yellow:#f5e014;--yd:#c9b800;
-  --red:#e53e3e;--amber:#e8922a;--green:#38a169;
-  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
-  --mono:'IBM Plex Mono',monospace;
+  --bg:#f4f5f7;--surface:#fff;--surface2:#f9fafb;--border:#e4e7ec;--border2:#d0d5dd;
+  --text:#101828;--text2:#344054;--muted:#667085;--muted2:#98a2b3;
+  --accent:#c9a800;--accent-dark:#a38600;--accent-light:#fffbe6;--accent-mid:#fde68a;--accent-text:#78350f;
+  --green:#079455;--green-bg:#ecfdf3;--green-bd:#abefc6;
+  --red:#d92d20;--red-bg:#fef3f2;--red-bd:#fecdca;
+  --amber:#b54708;--amber-bg:#fffaeb;--amber-bd:#fedf89;
+  --blue:#1d4ed8;--blue-bg:#eff3ff;--blue-bd:#c7d5fa;
+  --sidebar-w:56px;--topnav-h:52px;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.06);--shadow:0 1px 3px rgba(16,24,40,.1),0 1px 2px rgba(16,24,40,.06);
+  --r:10px;--sans:'Bricolage Grotesque',system-ui,sans-serif;--mono:'Geist Mono',monospace;
 }
 html{font-size:14px}
-body{background:var(--black);color:#d4d4d4;font-family:var(--sans);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased;display:flex}
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:12px 0;position:fixed;top:0;left:0;bottom:0;z-index:200;gap:2px}
+.sidebar-logo{width:36px;height:36px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;flex-shrink:0;overflow:hidden}
+.nav-btn{width:40px;height:40px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;position:relative;text-decoration:none}
+.nav-btn:hover{background:var(--surface2);color:var(--text)}.nav-btn.active{background:var(--accent-light);color:var(--accent-dark)}
+.nav-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.nav-tooltip{position:absolute;left:calc(var(--sidebar-w) + 8px);background:#101828;color:#fff;font-size:11px;padding:4px 9px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;font-family:var(--mono);z-index:300}
+.nav-btn:hover .nav-tooltip{opacity:1}
+.main-wrap{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:var(--topnav-h);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm)}
+.topbar-left{display:flex;align-items:center;gap:8px}
+.topbar-logo{display:none}.topbar-logo-mark{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.topbar-name{font-weight:700;font-size:15px;letter-spacing:-.01em}
+.topbar-sep{color:var(--muted2);margin:0 4px}.topbar-page{color:var(--muted);font-size:14px;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;font-family:var(--mono);background:var(--accent-light);color:var(--accent-text);border:1px solid var(--accent-mid)}
+.page-content{padding:24px 24px 64px;max-width:1100px;width:100%;margin:0 auto}
+.page-header{margin-bottom:22px}.page-header h1{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.page-header p{color:var(--muted);font-size:12px;margin-top:3px;font-family:var(--mono)}
+.sl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px;font-family:var(--mono);display:flex;align-items:center;gap:8px}
+.sl::after{content:'';flex:1;height:1px;background:var(--border)}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--border)}
+.kpi.up::before{background:var(--green)}.kpi.down::before{background:var(--red)}.kpi.ok::before{background:var(--green)}.kpi.accent::before{background:var(--accent)}
+.kpi-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px;font-family:var(--mono)}
+.kpi-val{font-size:24px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.kpi-sub{margin-top:6px;font-size:11px;color:var(--muted)}.kpi-sub.up{color:var(--green)}.kpi-sub.down{color:var(--red)}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm);margin-bottom:16px}
+.panel-hd{padding:14px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ph-title{font-size:13px;font-weight:600}.ph-sub{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.panel-bd{padding:18px}
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;font-family:var(--mono);white-space:nowrap}
+.badge.green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.badge.red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.badge.amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd)}
+.badge.yellow{background:var(--accent-light);color:var(--accent-text);border:1px solid var(--accent-mid)}
+.gt-table{width:100%;border-collapse:collapse}
+.gt-table th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);font-family:var(--mono);white-space:nowrap}
+.gt-table th.r{text-align:right}
+.gt-table td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+.gt-table tr:last-child td{border-bottom:none}.gt-table tr:hover td{background:var(--surface2)}
+.td-r{text-align:right;font-family:var(--mono);font-size:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--accent);color:#000}.btn-primary:hover{background:var(--accent-dark)}
+.btn-ghost{background:var(--surface);border:1px solid var(--border);color:var(--text2)}.btn-ghost:hover{background:var(--surface2)}
+.var-up{color:var(--green);font-family:var(--mono);font-size:12px}.var-down{color:var(--red);font-family:var(--mono);font-size:12px}
+.loading{padding:60px 20px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px}
+.error-card{background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;padding:16px 18px;margin-bottom:16px;font-family:var(--mono);font-size:12px;color:var(--red)}
+.page-footer{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--border);margin-top:8px}
+.footer-text{font-family:var(--mono);font-size:10px;color:var(--muted2)}
+.mobile-nav{display:none}
+@media(max-width:768px){
+  html{font-size:16px}body{display:block}.sidebar{display:none}.main-wrap{margin-left:0}
+  .topbar-logo{display:flex;align-items:center;gap:8px;margin-right:4px}
+  .topbar-sep,.topbar-page{display:none}
+  .page-content{padding:16px 14px 80px}
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface);border-top:1px solid var(--border);height:56px;box-shadow:0 -1px 3px rgba(16,24,40,.08)}
+  .mobile-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:9px;font-family:var(--mono);font-weight:600;letter-spacing:.04em;text-transform:uppercase;text-decoration:none}
+  .mobile-nav-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+  .mobile-nav-btn.active{color:var(--accent-dark)}
+}
 
-/* NAV */
-.topnav{position:fixed;top:0;left:0;right:0;z-index:200;height:52px;background:var(--g950);border-bottom:1px solid var(--g700);display:flex;align-items:center;padding:0 16px;gap:0}
-.back-btn{display:flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;color:var(--g300);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:0;margin-right:12px;text-decoration:none;flex-shrink:0}
-.back-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.back-btn:hover{color:#fff}
-.nav-logo{display:flex;align-items:center;gap:10px}
-.nav-logo-mark{width:28px;height:28px;background:var(--yellow);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
-.nav-company{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff}
-.nav-divider{width:1px;height:20px;background:var(--g700);margin:0 14px}
-.nav-product{font-size:12px;color:var(--g300);letter-spacing:.04em}
-.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-.nav-tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--g400);background:var(--g800);border:1px solid var(--g700);border-radius:4px;padding:3px 8px;white-space:nowrap}
-
-/* SYNC BTN */
-.sync-btn{background:var(--yellow);color:var(--black);border:none;border-radius:6px;padding:6px 14px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:opacity .15s}
-.sync-btn:hover{opacity:.85}
-.sync-btn:disabled{opacity:.4;cursor:default}
-.sync-btn.syncing{background:var(--g700);color:var(--g300)}
-.sync-btn.success{background:var(--green);color:#fff}
-.sync-btn.error{background:var(--red);color:#fff}
-
-/* PAGE */
-.page{padding-top:52px;min-height:100vh}
-
-/* TOOLBAR */
-.toolbar{background:var(--g900);border-bottom:1px solid var(--g700);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:52px;z-index:100}
+.toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:var(--topnav-h);z-index:90}
 .search-wrap{flex:1;position:relative}
-.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:var(--g400);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
-.search-input{width:100%;background:var(--g800);border:1px solid var(--g700);border-radius:6px;padding:8px 10px 8px 32px;color:#fff;font-family:var(--sans);font-size:13px;outline:none}
-.search-input::placeholder{color:var(--g400)}
-.search-input:focus{border-color:var(--yd)}
-.filter-btn{background:var(--g800);border:1px solid var(--g700);border-radius:6px;padding:8px 12px;color:var(--g300);font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .15s}
-.filter-btn.active{background:rgba(229,62,62,.15);border-color:var(--red);color:var(--red)}
-
-/* STATS BAR */
-.stats-bar{background:var(--g950);border-bottom:1px solid var(--g700);padding:10px 16px;display:flex;gap:20px}
-.stat{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--g400)}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.search-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px 8px 32px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none}
+.search-input::placeholder{color:var(--muted)}
+.search-input:focus{border-color:var(--accent);background:var(--surface)}
+.filter-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .15s}
+.filter-btn.active{background:var(--red-bg);border-color:var(--red-bd);color:var(--red)}
+.stats-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:20px}
+.stat{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--muted)}
 .stat-dot{width:6px;height:6px;border-radius:50%}
-.stat-num{color:#fff;font-weight:500}
-
-/* SECTIONS */
-.section-hdr{background:var(--g950);padding:10px 16px;border-bottom:1px solid var(--g700);display:flex;align-items:center;justify-content:space-between;position:sticky;top:108px;z-index:90;cursor:pointer;user-select:none}
-.section-hdr:hover .section-title{opacity:.8}
-.section-chevron{font-size:10px;color:var(--g400);transition:transform .2s;flex-shrink:0;margin-left:8px}
-.section-hdr.collapsed .section-chevron{transform:rotate(-90deg)}
+.stat-num{color:var(--text);font-weight:600}
+.section-hdr{background:var(--surface2);padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .1s}
+.section-hdr:hover{background:var(--border)}
+.section-title{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-dark);font-weight:600}
+.section-count{font-family:var(--mono);font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sec-chevron{font-size:10px;color:var(--muted);transition:transform .2s}
+.section-hdr.collapsed .sec-chevron{transform:rotate(-90deg)}
 .section-items.collapsed{display:none}
-.section-title{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);font-weight:500}
-.section-count{font-family:var(--mono);font-size:10px;color:var(--g400)}
-
-/* ITEM ROWS */
-.item-row{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);gap:12px;transition:background .1s}
-.item-row:hover{background:rgba(255,255,255,.02)}
+.item-row{display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid var(--border);gap:12px;transition:background .1s;background:var(--surface)}
+.item-row:hover{background:var(--surface2)}
 .item-row.low{border-left:3px solid var(--red)}
 .item-row.ok{border-left:3px solid transparent}
 .item-info{flex:1;min-width:0}
-.item-name{font-size:13px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item-meta{font-family:var(--mono);font-size:10px;color:var(--g400);margin-top:2px}
-.item-par{color:var(--g300)}
-.item-par.low{color:var(--red)}
-.item-par.ok{color:var(--green)}
-
-/* COUNT INPUT */
+.item-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-meta{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+.item-par.low{color:var(--red)}.item-par.ok{color:var(--green)}
 .count-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.count-btn{background:var(--g700);border:none;color:var(--g300);width:28px;height:28px;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s;flex-shrink:0}
-.count-btn:hover,.count-btn:active{background:var(--g600);color:#fff}
-.count-input{width:56px;background:var(--g800);border:1px solid var(--g700);border-radius:6px;padding:5px 6px;color:#fff;font-family:var(--mono);font-size:14px;font-weight:500;text-align:center;outline:none;appearance:textfield}
+.count-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:28px;height:28px;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .1s;flex-shrink:0}
+.count-btn:hover{background:var(--border);color:var(--text)}
+.count-input{width:56px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 6px;color:var(--text);font-family:var(--mono);font-size:14px;font-weight:600;text-align:center;outline:none;appearance:textfield}
 .count-input::-webkit-inner-spin-button,.count-input::-webkit-outer-spin-button{appearance:none}
-.count-input:focus{border-color:var(--yd)}
-.count-input.low{border-color:rgba(229,62,62,.4);color:var(--red)}
-.count-input.ok{border-color:rgba(56,161,105,.4)}
-
-/* EMPTY */
-.empty{padding:48px 16px;text-align:center;color:var(--g400);font-family:var(--mono);font-size:12px}
-
-/* AUTH MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:20px}
+.count-input:focus{border-color:var(--accent)}
+.count-input.low{border-color:var(--red-bd);color:var(--red)}
+.count-input.ok{border-color:var(--green-bd)}
+.sync-btn{background:var(--accent);color:#000;border:none;border-radius:6px;padding:6px 14px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.sync-btn:hover{opacity:.85}.sync-btn:disabled{opacity:.4;cursor:default}
+.sync-btn.syncing{background:var(--surface2);color:var(--muted)}
+.sync-btn.success{background:var(--green);color:#fff}
+.sync-btn.error{background:var(--red);color:#fff}
+.modal-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(16,24,40,.5);align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
-.modal{background:var(--g900);border:1px solid var(--g700);border-radius:12px;padding:28px 24px;width:100%;max-width:400px}
-.modal-title{font-size:16px;font-weight:600;color:#fff;margin-bottom:6px}
-.modal-sub{font-size:13px;color:var(--g400);margin-bottom:24px;line-height:1.5}
-.modal-btn{width:100%;background:var(--yellow);color:var(--black);border:none;border-radius:8px;padding:12px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
-.modal-btn:hover{opacity:.85}
-.modal-cancel{display:block;text-align:center;margin-top:12px;color:var(--g400);font-size:13px;cursor:pointer}
-.modal-cancel:hover{color:#fff}
-
-/* TOAST */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--g800);border:1px solid var(--g700);border-radius:8px;padding:10px 20px;font-family:var(--mono);font-size:12px;color:#fff;z-index:400;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
-.toast.show{opacity:1}
-.toast.green{border-color:var(--green);color:var(--green)}
-.toast.red{border-color:var(--red);color:var(--red)}
-
-/* FOOTER */
-.page-footer{padding:20px 16px;border-top:1px solid var(--g700);display:flex;justify-content:space-between;align-items:center}
-.footer-text{font-family:var(--mono);font-size:10px;color:var(--g600)}
-
-@media(max-width:768px){
-  html{font-size:16px}
-  .nav-divider,.nav-product{display:none}
-  .nav-logo{display:none}
-  .stats-bar{gap:12px}
-  .section-hdr{top:108px}
-}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 24px;width:100%;max-width:400px;box-shadow:var(--shadow)}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5}
+.modal-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:8px;padding:12px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer}
+.modal-cancel{display:block;text-align:center;margin-top:12px;color:var(--muted);font-size:13px;cursor:pointer}
+.modal-cancel:hover{color:var(--text)}
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;border-radius:8px;padding:10px 20px;font-family:var(--mono);font-size:12px;z-index:400;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}.toast.green{background:var(--green)}.toast.red{background:var(--red)}
+.empty{padding:48px 16px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px}
 </style>
 </head>
 <body>
-
-<!-- CONFIG — paste your Client ID below -->
-<script>
-const SHEET_ID   = '1dTFq7bt7VaROu-eNXL3ie5J-p2wWJqSy3DdN8zg-yDE';
-const SHEET_TAB  = 'Countsheet';
-const CLIENT_ID  = '913629678796-thcapfaqb3sluu4sjgkgtc2fa5m2lvab.apps.googleusercontent.com';
-const SCOPES     = 'https://www.googleapis.com/auth/spreadsheets';
-</script>
-
-<nav class="topnav">
-  <a class="back-btn" href="index.html">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>GT Ops
-  </a>
-  <div class="nav-logo">
-    <div class="nav-logo-mark">
-      <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
-        <text x="14" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" fill="#000">GT</text>
-      </svg>
-    </div>
-    <span class="nav-company">Game Theory</span>
+<nav class="sidebar"><div class="sidebar-logo"><svg viewBox="0 0 28 28" width="28" height="28"><text x="14" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" fill="#000">GT</text></svg></div><a class="nav-btn " href="index.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="nav-tooltip">Home</span></a><a class="nav-btn " href="labor.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="nav-tooltip">Labor Scheduler</span></a><a class="nav-btn " href="sales.html"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="nav-tooltip">Sales Dashboard</span></a><a class="nav-btn active" href="inventory.html"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><span class="nav-tooltip">Inventory Count</span></a><a class="nav-btn " href="tasks.html"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="nav-tooltip">Task Report</span></a><a class="nav-btn " href="coverage.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg><span class="nav-tooltip">Table Coverage</span></a></nav>
+<div class="main-wrap">
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo"><div class="topbar-logo-mark"><svg viewBox="0 0 28 28" width="20" height="20"><text x="14" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" fill="#000">GT</text></svg></div></div>
+    <span class="topbar-name">Game Theory</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-page">Inventory Count</span>
   </div>
-  <div class="nav-divider"></div>
-  <span class="nav-product">Inventory Count</span>
-  <div class="nav-right">
-    <button class="sync-btn" id="sync-btn" onclick="startSync()">Sync to Sheet</button>
-  </div>
-</nav>
-
-<div class="page">
+  <div class="topbar-right"><button class="sync-btn" id="sync-btn" onclick="startSync()">Sync to Sheet</button></div>
+</header>
   <div class="toolbar">
-    <div class="search-wrap">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input class="search-input" id="search" type="text" placeholder="Search items..." oninput="renderList()">
-    </div>
+    <div class="search-wrap"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="search-input" id="search" type="text" placeholder="Search items..." oninput="renderList()"></div>
     <button class="filter-btn" id="filter-low" onclick="toggleFilter()">Low only</button>
   </div>
-
   <div class="stats-bar">
-    <div class="stat"><div class="stat-dot" style="background:var(--g600)"></div><span id="stat-total" class="stat-num">0</span>&nbsp;items</div>
+    <div class="stat"><div class="stat-dot" style="background:var(--muted2)"></div><span id="stat-total" class="stat-num">0</span>&nbsp;items</div>
     <div class="stat"><div class="stat-dot" style="background:var(--red)"></div><span id="stat-low" class="stat-num">0</span>&nbsp;below par</div>
     <div class="stat"><div class="stat-dot" style="background:var(--green)"></div><span id="stat-counted" class="stat-num">0</span>&nbsp;counted</div>
   </div>
-
   <div id="list"></div>
-
-  <div class="page-footer">
-    <span class="footer-text" id="footer-date"></span>
-    <span class="footer-text">Game Theory · Inventory</span>
-  </div>
+  <div class="page-footer" style="padding:14px 16px"><span class="footer-text" id="footer-date"></span><span class="footer-text">Game Theory · Inventory</span></div>
 </div>
-
-<!-- AUTH MODAL -->
 <div class="modal-overlay" id="auth-modal">
-  <div class="modal">
-    <div class="modal-title">Sign in to sync</div>
-    <div class="modal-sub">You'll be asked to sign in with Google to allow GT Ops to write counts to your inventory sheet.</div>
-    <button class="modal-btn" onclick="doAuth()">Sign in with Google</button>
-    <span class="modal-cancel" onclick="closeModal()">Cancel</span>
-  </div>
+  <div class="modal"><div class="modal-title">Sign in to sync</div><div class="modal-sub">You'll be asked to sign in with Google to allow GT Ops to write counts to your inventory sheet.</div><button class="modal-btn" onclick="doAuth()">Sign in with Google</button><span class="modal-cancel" onclick="closeModal()">Cancel</span></div>
 </div>
-
+<nav class="mobile-nav"><a class="mobile-nav-btn " href="index.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a><a class="mobile-nav-btn " href="labor.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Labor</a><a class="mobile-nav-btn " href="sales.html"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Sales</a><a class="mobile-nav-btn active" href="inventory.html"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Inventory</a><a class="mobile-nav-btn " href="coverage.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Coverage</a></nav>
 <div class="toast" id="toast"></div>
-
 <script>
+const SHEET_ID='1dTFq7bt7VaROu-eNXL3ie5J-p2wWJqSy3DdN8zg-yDE';
+const SHEET_TAB='Countsheet';
+const CLIENT_ID='913629678796-thcapfaqb3sluu4sjgkgtc2fa5m2lvab.apps.googleusercontent.com';
+const SCOPES='https://www.googleapis.com/auth/spreadsheets';
 const ITEMS = [
   {row:3, section:'TOP SHELF', item:'Whole Milk', uom:'Gallons', par:4.0},
   {row:4, section:'TOP SHELF', item:'Half + Half', uom:'1Qt', par:12.0},
@@ -350,228 +334,30 @@ const ITEMS = [
   {row:176, section:'Bar Liquor Shelf', item:'Bitter Orange Juice', uom:'bottle', par:3.0},
   {row:177, section:'Bar Liquor Shelf', item:'bloody mary mix (zing zang)', uom:'container (32oz)', par:3.0},
 ];
-
-// State
-const counts = {};
-const collapsedSections = new Set();
-let filterLow = false;
-let tokenClient = null;
-let accessToken = null;
-
-// Init Google Identity Services
-function loadGIS() {
-  if (!CLIENT_ID || CLIENT_ID.includes('PASTE')) return;
-  const script = document.createElement('script');
-  script.src = 'https://accounts.google.com/gsi/client';
-  script.onload = () => {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: (resp) => {
-        if (resp.error) { showToast('Auth failed: ' + resp.error, 'red'); return; }
-        accessToken = resp.access_token;
-        pushToSheets();
-      }
-    });
-  };
-  document.head.appendChild(script);
-}
-
-function getCount(row) {
-  return counts[row] !== undefined ? counts[row] : '';
-}
-
-function setCount(row, val) {
-  const num = parseFloat(val);
-  counts[row] = isNaN(num) ? '' : num;
-  updateStats();
-  updateRowStyle(row);
-}
-
-function stepCount(row, delta) {
-  const cur = getCount(row);
-  const num = (cur === '' ? 0 : parseFloat(cur)) + delta;
-  const rounded = Math.round(num * 4) / 4; // quarter increments
-  counts[row] = Math.max(0, rounded);
-  const input = document.getElementById('c-' + row);
-  if (input) input.value = counts[row];
-  updateStats();
-  updateRowStyle(row);
-}
-
-function updateRowStyle(row) {
-  const item = ITEMS.find(i => i.row === row);
-  if (!item) return;
-  const input = document.getElementById('c-' + row);
-  const rowEl = document.getElementById('r-' + row);
-  if (!input || !rowEl) return;
-  const val = getCount(row);
-  const isLow = val !== '' && parseFloat(val) < item.par;
-  input.className = 'count-input' + (isLow ? ' low' : val !== '' ? ' ok' : '');
-  rowEl.className = 'item-row' + (isLow ? ' low' : ' ok');
-}
-
-function updateStats() {
-  const counted = ITEMS.filter(i => getCount(i.row) !== '').length;
-  const low = ITEMS.filter(i => {
-    const v = getCount(i.row);
-    return v !== '' && parseFloat(v) < i.par;
-  }).length;
-  document.getElementById('stat-total').textContent = ITEMS.length;
-  document.getElementById('stat-counted').textContent = counted;
-  document.getElementById('stat-low').textContent = low;
-}
-
-function toggleSection(secId) {
-  if (collapsedSections.has(secId)) {
-    collapsedSections.delete(secId);
-  } else {
-    collapsedSections.add(secId);
-  }
-  renderList();
-}
-
-function toggleFilter() {
-  filterLow = !filterLow;
-  document.getElementById('filter-low').classList.toggle('active', filterLow);
-  renderList();
-}
-
-function renderList() {
-  const q = (document.getElementById('search').value || '').toLowerCase();
-  const list = document.getElementById('list');
-  const sections = [...new Set(ITEMS.map(i => i.section))];
-  let html = '';
-
-  sections.forEach(section => {
-    let items = ITEMS.filter(i => i.section === section);
-    if (q) items = items.filter(i => i.item.toLowerCase().includes(q) || i.uom.toLowerCase().includes(q));
-    if (filterLow) items = items.filter(i => {
-      const v = getCount(i.row);
-      return v !== '' && parseFloat(v) < i.par;
-    });
-    if (!items.length) return;
-
-    const secId = section.replace(/\s+/g,'_');
-    const isCollapsed = collapsedSections.has(secId);
-    html += `<div class="section-hdr${isCollapsed?' collapsed':''}" onclick="toggleSection('${secId.replace(/'/g,"\\'")}')"><div style="display:flex;align-items:center;gap:8px"><span class="section-title">${section}</span><span class="section-count">${items.length} items</span></div><span class="section-chevron">▼</span></div>`;
-    html += `<div class="section-items${isCollapsed?' collapsed':''}" id="sec-${secId}">`;
-    items.forEach(i => {
-      const val = getCount(i.row);
-      const isLow = val !== '' && parseFloat(val) < i.par;
-      const parTxt = i.par > 0 ? `par: ${i.par}` : '';
-      html += `<div class="item-row${isLow ? ' low' : ' ok'}" id="r-${i.row}">
-        <div class="item-info">
-          <div class="item-name">${i.item}</div>
-          <div class="item-meta"><span class="item-uom">${i.uom}</span>${parTxt ? ` &nbsp;·&nbsp; <span class="item-par${isLow ? ' low' : val !== '' ? ' ok' : ''}">${parTxt}</span>` : ''}</div>
-        </div>
-        <div class="count-wrap">
-          <button class="count-btn" onclick="stepCount(${i.row},-0.25)">−</button>
-          <input class="count-input${isLow ? ' low' : val !== '' ? ' ok' : ''}" id="c-${i.row}" type="number" min="0" step="0.25" value="${val}" placeholder="—" oninput="setCount(${i.row}, this.value)">
-          <button class="count-btn" onclick="stepCount(${i.row},0.25)">+</button>
-        </div>
-      </div>`;
-    });
-    html += '</div>';
-  });
-
-  if (!html) html = '<div class="empty">No items match your search.</div>';
-  list.innerHTML = html;
-}
-
-// ── SYNC ────────────────────────────────────────────
-function startSync() {
-  const counted = ITEMS.filter(i => getCount(i.row) !== '').length;
-  if (!counted) { showToast('No counts to sync yet', 'red'); return; }
-  if (!CLIENT_ID || CLIENT_ID.includes('PASTE')) { showToast('Client ID not configured', 'red'); return; }
-  document.getElementById('auth-modal').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('auth-modal').classList.remove('open');
-}
-
-function doAuth() {
-  closeModal();
-  if (!tokenClient) { showToast('Google auth not loaded', 'red'); return; }
-  if (accessToken) { pushToSheets(); return; }
-  tokenClient.requestAccessToken();
-}
-
-async function pushToSheets() {
-  const btn = document.getElementById('sync-btn');
-  btn.textContent = 'Syncing...';
-  btn.disabled = true;
-  btn.className = 'sync-btn syncing';
-
-  // Build batch update — only rows with counts entered
-  const data = ITEMS
-    .filter(i => getCount(i.row) !== '')
-    .map(i => ({
-      range: `${SHEET_TAB}!D${i.row}`,
-      values: [[getCount(i.row)]]
-    }));
-
-  try {
-    const resp = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + accessToken,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data })
-      }
-    );
-
-    if (!resp.ok) {
-      const err = await resp.json();
-      throw new Error(err.error?.message || resp.statusText);
-    }
-
-    btn.textContent = 'Synced ✓';
-    btn.className = 'sync-btn success';
-    showToast(`${data.length} counts synced to Google Sheets`, 'green');
-    setTimeout(() => {
-      btn.textContent = 'Sync to Sheet';
-      btn.disabled = false;
-      btn.className = 'sync-btn';
-    }, 3000);
-
-  } catch(e) {
-    btn.textContent = 'Sync Failed';
-    btn.className = 'sync-btn error';
-    btn.disabled = false;
-    showToast('Sync failed: ' + e.message, 'red');
-    accessToken = null; // force re-auth next time
-    setTimeout(() => {
-      btn.textContent = 'Sync to Sheet';
-      btn.className = 'sync-btn';
-    }, 3000);
-  }
-}
-
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (type ? ' ' + type : '');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.className = 'toast', 3000);
-}
-
-// Init
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('footer-date').textContent =
-    new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).toUpperCase();
-  updateStats();
-  renderList();
-  loadGIS();
-});
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
-}
+const counts={};const collapsedSections=new Set();let filterLow=false,tokenClient=null,accessToken=null;
+function loadGIS(){if(!CLIENT_ID||CLIENT_ID.includes('PASTE'))return;const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.onload=()=>{tokenClient=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,callback:(r)=>{if(r.error){showToast('Auth failed: '+r.error,'red');return;}accessToken=r.access_token;pushToSheets();}});}; document.head.appendChild(s);}
+function getCount(row){return counts[row]!==undefined?counts[row]:'';}
+function setCount(row,val){const n=parseFloat(val);counts[row]=isNaN(n)?'':n;updateStats();updateRowStyle(row);}
+function stepCount(row,delta){const cur=getCount(row);const n=(cur===''?0:parseFloat(cur))+delta;const r=Math.round(n*4)/4;counts[row]=Math.max(0,r);const inp=document.getElementById('c-'+row);if(inp)inp.value=counts[row];updateStats();updateRowStyle(row);}
+function updateRowStyle(row){const item=ITEMS.find(i=>i.row===row);if(!item)return;const inp=document.getElementById('c-'+row);const rowEl=document.getElementById('r-'+row);if(!inp||!rowEl)return;const val=getCount(row);const isLow=val!==''&&parseFloat(val)<item.par;inp.className='count-input'+(isLow?' low':val!==''?' ok':'');rowEl.className='item-row'+(isLow?' low':' ok');}
+function updateStats(){const counted=ITEMS.filter(i=>getCount(i.row)!=='').length;const low=ITEMS.filter(i=>{const v=getCount(i.row);return v!==''&&parseFloat(v)<i.par;}).length;document.getElementById('stat-total').textContent=ITEMS.length;document.getElementById('stat-counted').textContent=counted;document.getElementById('stat-low').textContent=low;}
+function toggleFilter(){filterLow=!filterLow;document.getElementById('filter-low').classList.toggle('active',filterLow);renderList();}
+function toggleSection(secId){if(collapsedSections.has(secId)){collapsedSections.delete(secId);}else{collapsedSections.add(secId);}renderList();}
+function renderList(){const q=(document.getElementById('search').value||'').toLowerCase();const list=document.getElementById('list');const sections=[...new Set(ITEMS.map(i=>i.section))];let html='';
+sections.forEach(section=>{let items=ITEMS.filter(i=>i.section===section);if(q)items=items.filter(i=>i.item.toLowerCase().includes(q)||i.uom.toLowerCase().includes(q));if(filterLow)items=items.filter(i=>{const v=getCount(i.row);return v!==''&&parseFloat(v)<i.par;});if(!items.length)return;
+const secId=section.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');const isCollapsed=collapsedSections.has(secId);
+html+=`<div class="section-hdr${isCollapsed?' collapsed':''}" onclick="toggleSection('${secId}')"><span class="section-title">${section}</span><span class="section-count">${items.length} items<span class="sec-chevron">▼</span></span></div>`;
+html+=`<div class="section-items${isCollapsed?' collapsed':''}" id="sec-${secId}">`;
+items.forEach(i=>{const val=getCount(i.row);const isLow=val!==''&&parseFloat(val)<i.par;const parTxt=i.par>0?`par: ${i.par}`:'';html+=`<div class="item-row${isLow?' low':' ok'}" id="r-${i.row}"><div class="item-info"><div class="item-name">${i.item}</div><div class="item-meta">${i.uom}${parTxt?` &nbsp;·&nbsp; <span class="item-par${isLow?' low':val!==''?' ok':''}">${parTxt}</span>`:''}</div></div><div class="count-wrap"><button class="count-btn" onclick="stepCount(${i.row},-0.25)">−</button><input class="count-input${isLow?' low':val!==''?' ok':''}" id="c-${i.row}" type="number" min="0" step="0.25" value="${val}" placeholder="—" oninput="setCount(${i.row},this.value)"><button class="count-btn" onclick="stepCount(${i.row},0.25)">+</button></div></div>`;});
+html+='</div>';});
+if(!html)html='<div class="empty">No items match your search.</div>';list.innerHTML=html;}
+function startSync(){const counted=ITEMS.filter(i=>getCount(i.row)!=='').length;if(!counted){showToast('No counts to sync yet','red');return;}if(!CLIENT_ID||CLIENT_ID.includes('PASTE')){showToast('Client ID not configured','red');return;}document.getElementById('auth-modal').classList.add('open');}
+function closeModal(){document.getElementById('auth-modal').classList.remove('open');}
+function doAuth(){closeModal();if(!tokenClient){showToast('Google auth not loaded','red');return;}if(accessToken){pushToSheets();return;}tokenClient.requestAccessToken();}
+async function pushToSheets(){const btn=document.getElementById('sync-btn');btn.textContent='Syncing...';btn.disabled=true;btn.className='sync-btn syncing';const data=ITEMS.filter(i=>getCount(i.row)!=='').map(i=>{return{range:`${SHEET_TAB}!D${i.row}`,values:[[getCount(i.row)]]}});try{const resp=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({valueInputOption:'USER_ENTERED',data})});if(!resp.ok){const err=await resp.json();throw new Error(err.error?.message||resp.statusText);}btn.textContent='Synced ✓';btn.className='sync-btn success';showToast(`${data.length} counts synced`,'green');setTimeout(()=>{btn.textContent='Sync to Sheet';btn.disabled=false;btn.className='sync-btn';},3000);}catch(e){btn.textContent='Sync Failed';btn.className='sync-btn error';btn.disabled=false;showToast('Sync failed: '+e.message,'red');accessToken=null;setTimeout(()=>{btn.textContent='Sync to Sheet';btn.className='sync-btn';},3000);}}
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');clearTimeout(t._timer);t._timer=setTimeout(()=>t.className='toast',3000);}
+document.addEventListener('DOMContentLoaded',()=>{document.getElementById('footer-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).toUpperCase();updateStats();renderList();loadGIS();});
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js'));
 </script>
 </body>
 </html>

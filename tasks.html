@@ -3,973 +3,753 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Operations Intelligence — Task Completion Report</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Task Completion Report — Game Theory</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
-  --black:   #000000;
-  --gray-950:#0a0a0a;
-  --gray-900:#111111;
-  --gray-800:#1a1a1a;
-  --gray-700:#2a2a2a;
-  --gray-600:#3a3a3a;
-  --gray-400:#666666;
-  --gray-300:#888888;
-  --yellow:  #f5e014;
-  --yellow-d:#c9b800;
-  --yellow-dim:rgba(245,224,20,0.08);
-  --red:     #e53e3e;
-  --amber:   #e8922a;
-  --green:   #38a169;
-  --sans: 'Inter', system-ui, sans-serif;
-  --mono: 'IBM Plex Mono', monospace;
+  --bg:#f4f5f7; --surface:#fff; --surface2:#f9fafb;
+  --border:#e4e7ec; --border2:#d0d5dd;
+  --text:#101828; --text2:#344054; --muted:#667085; --muted2:#98a2b3;
+  --accent:#1d4ed8; --accent-light:#eff3ff; --accent-mid:#c7d5fa;
+  --green:#079455; --green-bg:#ecfdf3; --green-bd:#abefc6;
+  --red:#d92d20; --red-bg:#fef3f2; --red-bd:#fecdca;
+  --amber:#b54708; --amber-bg:#fffaeb; --amber-bd:#fedf89;
+  --foh:#6941c6; --foh-bg:#f4f3ff; --foh-bd:#d9d6fe;
+  --boh:#c4320a; --boh-bg:#fff4ed; --boh-bd:#f9dbaf;
+  --mgmt:#027a48; --mgmt-bg:#ecfdf3; --mgmt-bd:#abefc6;
+  --sidebar-w:56px;--sidebar:56px;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.05);
+  --shadow:0 1px 3px rgba(16,24,40,.1),0 1px 2px rgba(16,24,40,.06);
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Bricolage Grotesque',sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:12px 0;position:fixed;top:0;left:0;bottom:0;z-index:200;gap:2px}
+.sidebar-logo{width:36px;height:36px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;flex-shrink:0}
+.sidebar-logo svg{width:18px;height:18px;fill:white}
+.nav-btn{width:40px;height:40px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;position:relative}
+.nav-btn:hover{background:var(--surface2);color:var(--text)}
+.nav-btn.active{background:var(--accent-light);color:var(--accent)}
+.nav-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.nav-tooltip{position:absolute;left:calc(var(--sidebar) + 8px);background:#101828;color:#fff;font-size:11px;padding:4px 9px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;font-family:'Geist Mono',monospace;z-index:300}
+.nav-btn:hover .nav-tooltip{opacity:1}
+
+/* ── MAIN ── */
+.main-wrap{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm)}
+.topbar-left{display:flex;align-items:center;gap:8px}
+.topbar-name{font-weight:700;font-size:15px;letter-spacing:-.01em}
+.topbar-sep{color:var(--muted2);margin:0 2px}
+.topbar-page{color:var(--muted);font-size:14px;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;font-family:'Geist Mono',monospace}
+.chip-blue{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-mid)}
+.chip-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+
+/* ── PAGE CONTENT ── */
+.page-content{padding:28px 28px 64px;max-width:1180px;width:100%}
+.page-view{display:none}
+.page-view.active{display:block}
+
+.page-header{margin-bottom:22px}
+.page-header h1{font-size:21px;font-weight:700;letter-spacing:-.02em}
+.page-header p{color:var(--muted);font-size:13px;margin-top:3px;font-family:'Geist Mono',monospace}
+
+/* ── SECTION LABEL ── */
+.sl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px;font-family:'Geist Mono',monospace;display:flex;align-items:center;gap:8px}
+.sl::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── GRID HELPERS ── */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.g2{display:grid;grid-template-columns:1fr 290px;gap:14px;margin-bottom:20px}
+.g2-left{display:grid;grid-template-columns:290px 1fr;gap:14px;margin-bottom:20px}
+
+/* ── PANEL / CARD ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm)}
+.panel-hd{padding:15px 20px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ph-title{font-size:13px;font-weight:600}
+.ph-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.panel-bd{padding:20px}
+.panel-bd-sm{padding:10px 12px}
+
+/* ── KPI CARD ── */
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow-sm);transition:box-shadow .15s}
+.kpi:hover{box-shadow:var(--shadow)}
+.kpi-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px;font-family:'Geist Mono',monospace}
+.kpi-val{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.kpi-sub{font-size:16px;color:var(--muted2);font-weight:500}
+.kpi-ft{margin-top:8px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ── DEPT CARD ── */
+.dept-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow-sm);transition:box-shadow .15s;position:relative;overflow:hidden}
+.dept-card:hover{box-shadow:var(--shadow)}
+.dept-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0}
+.dept-card.foh::before{background:var(--foh)}.dept-card.boh::before{background:var(--boh)}.dept-card.mgmt::before{background:var(--mgmt)}
+.dc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.dc-pct{font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.dc-pct.foh{color:var(--foh)}.dc-pct.boh{color:var(--boh)}.dc-pct.mgmt{color:var(--mgmt)}
+.dc-bar{height:6px;background:var(--bg);border-radius:99px;overflow:hidden;margin-bottom:14px}
+.dc-fill{height:100%;border-radius:99px}
+.dc-fill.foh{background:var(--foh)}.dc-fill.boh{background:var(--boh)}.dc-fill.mgmt{background:var(--mgmt)}
+.dc-stats{display:flex;gap:20px}
+.dc-stat-val{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.dc-stat-lbl{font-size:11px;color:var(--muted);font-family:'Geist Mono',monospace}
+
+/* ── PILLS ── */
+.pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;font-family:'Geist Mono',monospace;letter-spacing:.04em}
+.pill.foh{background:var(--foh-bg);color:var(--foh);border:1px solid var(--foh-bd)}
+.pill.boh{background:var(--boh-bg);color:var(--boh);border:1px solid var(--boh-bd)}
+.pill.mgmt{background:var(--mgmt-bg);color:var(--mgmt);border:1px solid var(--mgmt-bd)}
+.pill.green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.pill.red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.pill.amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd)}
+.pill.blue{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-mid)}
+
+/* ── BADGES (small right-aligned) ── */
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;font-family:'Geist Mono',monospace;white-space:nowrap}
+.badge.green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.badge.red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.badge.amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd)}
+
+/* ── CHART ── */
+.chart-wrap{position:relative;height:220px}
+.chart-wrap-sm{position:relative;height:160px}
+.chart-legend{display:flex;gap:14px}
+.cl-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);font-family:'Geist Mono',monospace}
+.cl-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* ── ATTENTION LIST ── */
+.att-list{list-style:none;display:flex;flex-direction:column;gap:2px}
+.att-item{display:flex;align-items:center;padding:8px 10px;border-radius:6px;gap:8px;transition:background .1s}
+.att-item:hover{background:var(--surface2)}
+.att-name{font-size:12px;color:var(--text2);font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.att-day{font-size:11px;color:var(--muted);font-family:'Geist Mono',monospace;flex-shrink:0}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:5px;box-shadow:var(--shadow-sm);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:85px;padding:8px 12px;border-radius:7px;border:none;background:transparent;cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:500;color:var(--muted);transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:2px;white-space:nowrap}
+.tab:hover{background:var(--surface2);color:var(--text)}
+.tab.active{background:var(--accent);color:white;box-shadow:var(--shadow-sm)}
+.tab-sub{font-family:'Geist Mono',monospace;font-size:11px;opacity:.75}
+.tab.active .tab-sub{opacity:.9}
+
+/* ── DAY PANELS ── */
+.day-panel{display:none}.day-panel.active{display:block}
+.day-dept-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.ddm{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)}
+.ddm-lbl{font-size:12px;font-weight:600;color:var(--text2)}
+.ddm-bar{height:3px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:6px;width:80px}
+.ddm-fill{height:100%;border-radius:99px}
+.ddm-pct{font-size:16px;font-weight:700;font-family:'Geist Mono',monospace;letter-spacing:-.01em}
+.ddm-count{font-size:11px;color:var(--muted);font-family:'Geist Mono',monospace}
+
+/* ── FIX BANNER ── */
+.fix-banner{display:flex;align-items:flex-start;gap:10px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#78350f;line-height:1.55}
+.fix-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+
+/* ── CHECKLIST CARDS GRID ── */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.lc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow-sm);transition:box-shadow .15s,border-color .15s}
+.lc:hover{box-shadow:var(--shadow);border-color:var(--border2)}
+.lc-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px}
+.lc-name{font-size:13px;font-weight:600;line-height:1.35;flex:1}
+.pt{height:5px;background:var(--bg);border-radius:99px;overflow:hidden;margin-bottom:10px}
+.pf{height:100%;border-radius:99px}
+.pf.green{background:var(--green)}.pf.red{background:var(--red)}.pf.amber{background:#f79009}
+.lc-ft{display:flex;justify-content:space-between;align-items:center}
+.lc-count{font-size:11px;color:var(--muted);font-family:'Geist Mono',monospace}
+.lc-comp{font-size:11px;color:var(--muted);text-align:right;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── CHECKLIST TABLE ── */
+.cl-table{width:100%;border-collapse:collapse}
+.cl-table th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-family:'Geist Mono',monospace;background:var(--surface2)}
+.cl-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.cl-table tr:last-child td{border-bottom:none}
+.cl-table tr:hover td{background:var(--surface2)}
+.cl-name-cell{display:flex;align-items:center;gap:8px}
+.week-dots{display:flex;gap:3px;align-items:center}
+.wd{width:20px;height:20px;border-radius:4px;font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;flex-shrink:0}
+.wd.hit{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.wd.miss{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.wd.na{background:var(--surface2);color:var(--muted2);border:1px solid var(--border)}
+.bar-sm{height:4px;background:var(--bg);border-radius:99px;overflow:hidden;width:80px}
+.bar-sm-fill{height:100%;border-radius:99px}
+
+/* ── EMPLOYEE TABLE ── */
+.emp-table{width:100%;border-collapse:collapse}
+.emp-table th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);font-family:'Geist Mono',monospace;background:var(--surface2)}
+.emp-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.emp-table tr:last-child td{border-bottom:none}
+.emp-table tr:hover td{background:var(--surface2)}
+.emp-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;color:white}
+.emp-name-wrap{display:flex;align-items:center;gap:10px}
+.emp-name{font-weight:600;font-size:13px}
+.emp-dept-row{display:flex;gap:4px;flex-wrap:wrap}
+.rank-num{font-family:'Geist Mono',monospace;font-size:12px;font-weight:600;color:var(--muted2);width:20px}
+.dept-bar-row{display:flex;gap:3px;height:16px;border-radius:3px;overflow:hidden;width:80px}
+.db-seg{height:100%}
+
+/* ── DEPT DEEP DIVE ── */
+.dept-tab-row{display:flex;gap:8px;margin-bottom:20px}
+.dept-tab{padding:8px 18px;border-radius:7px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:600;color:var(--muted);transition:all .15s;box-shadow:var(--shadow-sm)}
+.dept-tab:hover{border-color:var(--border2);color:var(--text)}
+.dept-tab.active.foh{background:var(--foh-bg);color:var(--foh);border-color:var(--foh-bd)}
+.dept-tab.active.boh{background:var(--boh-bg);color:var(--boh);border-color:var(--boh-bd)}
+.dept-tab.active.mgmt{background:var(--mgmt-bg);color:var(--mgmt);border-color:var(--mgmt-bd)}
+.dept-view{display:none}.dept-view.active{display:block}
+.dept-daily-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:20px}
+.dday{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 12px;text-align:center;box-shadow:var(--shadow-sm)}
+.dday-label{font-size:11px;color:var(--muted);font-family:'Geist Mono',monospace;margin-bottom:6px}
+.dday-pct{font-size:20px;font-weight:700;letter-spacing:-.02em;line-height:1;margin-bottom:4px}
+.dday-count{font-size:11px;color:var(--muted);font-family:'Geist Mono',monospace}
+.dday-bar{height:4px;background:var(--bg);border-radius:99px;overflow:hidden;margin-top:8px}
+.dday-fill{height:100%;border-radius:99px}
+
+@media(max-width:960px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr 1fr}.g2,.g2-left{grid-template-columns:1fr}.dept-daily-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:640px){.page-content{padding:16px 16px 48px}.g3{grid-template-columns:1fr}.day-dept-row{grid-template-columns:1fr 1fr}}
+
+/* GT OPS NAV */
+body{display:flex}
+.sidebar{width:var(--sidebar-w,56px);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:12px 0;position:fixed;top:0;left:0;bottom:0;z-index:200;gap:2px}
+.sidebar-logo{width:36px;height:36px;background:#c9a800;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;flex-shrink:0;overflow:hidden}
+.nav-btn{width:40px;height:40px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;position:relative;text-decoration:none}
+.nav-btn:hover{background:var(--surface2);color:var(--text)}.nav-btn.active{background:#fffbe6;color:#a38600}
+.nav-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.nav-tooltip{position:absolute;left:64px;background:#101828;color:#fff;font-size:11px;padding:4px 9px;border-radius:5px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;font-family:var(--mono);z-index:300}
+.nav-btn:hover .nav-tooltip{opacity:1}
+.main-wrap{margin-left:56px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.mobile-nav{display:none}
+@media(max-width:768px){
+  body{display:block}
+  .sidebar{display:none}
+  .main-wrap{margin-left:0}
+  .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface);border-top:1px solid var(--border);height:56px}
+  .mobile-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:9px;font-family:var(--mono);font-weight:600;letter-spacing:.04em;text-transform:uppercase;text-decoration:none}
+  .mobile-nav-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+  .mobile-nav-btn.active{color:#a38600}
 }
-
-html { font-size: 14px; }
-
-body {
-  background: var(--black);
-  color: #d4d4d4;
-  font-family: var(--sans);
-  line-height: 1.5;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ─── TOP NAV ─────────────────────────────────────────────── */
-.topnav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  height: 52px;
-  background: var(--gray-950);
-  border-bottom: 1px solid var(--gray-700);
-  display: flex;
-  align-items: center;
-  padding: 0 28px;
-  gap: 0;
-}
-
-.nav-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-right: 32px;
-}
-
-.nav-logo-mark {
-  width: 28px; height: 28px;
-  background: var(--yellow);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-
-.nav-logo-mark svg {
-  width: 16px; height: 16px;
-  fill: var(--black);
-}
-
-.nav-company {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #ffffff;
-}
-
-.nav-divider {
-  width: 1px; height: 20px;
-  background: var(--gray-700);
-  margin: 0 20px;
-}
-
-.nav-product {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--gray-300);
-  letter-spacing: 0.04em;
-}
-
-.nav-right {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.nav-tag {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gray-400);
-  background: var(--gray-800);
-  border: 1px solid var(--gray-700);
-  padding: 3px 10px;
-}
-
-/* ─── PAGE SHELL ──────────────────────────────────────────── */
-.page {
-  padding-top: 52px;
-  min-height: 100vh;
-}
-
-/* ─── UPLOAD SCREEN ───────────────────────────────────────── */
-#upload-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 52px);
-  padding: 48px 24px;
-  gap: 0;
-}
-
-.up-kicker {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--yellow);
-  margin-bottom: 20px;
-}
-
-.up-h1 {
-  font-size: clamp(28px, 4vw, 44px);
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-  text-align: center;
-  line-height: 1.15;
-  margin-bottom: 8px;
-}
-
-.up-sub {
-  font-size: 14px;
-  color: var(--gray-400);
-  text-align: center;
-  margin-bottom: 48px;
-}
-
-#drop-zone {
-  position: relative;
-  width: 100%;
-  max-width: 480px;
-  background: var(--gray-900);
-  border: 1px solid var(--gray-700);
-  padding: 52px 40px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  margin-bottom: 20px;
-}
-
-#drop-zone::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--yellow);
-}
-
-#drop-zone:hover, #drop-zone.over {
-  border-color: var(--yellow);
-  background: var(--gray-800);
-}
-
-#drop-zone input {
-  position: absolute; inset: 0;
-  opacity: 0; width: 100%; height: 100%; cursor: pointer;
-}
-
-.up-icon-wrap {
-  width: 44px; height: 44px;
-  margin: 0 auto 20px;
-  border: 1px solid var(--gray-600);
-  display: flex; align-items: center; justify-content: center;
-}
-
-.up-icon-wrap svg {
-  width: 20px; height: 20px;
-  stroke: var(--yellow); fill: none;
-  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
-}
-
-.up-label { font-size: 14px; font-weight: 600; color: #ffffff; margin-bottom: 6px; }
-.up-hint  { font-family: var(--mono); font-size: 11px; color: var(--gray-400); }
-
-.up-meta {
-  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
-}
-
-.meta-pill {
-  font-family: var(--mono); font-size: 10px;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--gray-400);
-  border: 1px solid var(--gray-700);
-  padding: 4px 12px;
-}
-
-#error-msg {
-  display: none;
-  font-family: var(--mono); font-size: 11px;
-  color: var(--red);
-  border: 1px solid #3a1515;
-  background: #1a0808;
-  padding: 10px 18px;
-  margin-top: 16px;
-}
-
-/* ─── REPORT SCREEN ───────────────────────────────────────── */
-#report-screen {
-  display: none;
-}
-
-/* Sub-header bar */
-.sub-header {
-  background: var(--gray-900);
-  border-bottom: 1px solid var(--gray-700);
-  padding: 0 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.sub-header-left {
-  display: flex; align-items: baseline; gap: 16px;
-}
-
-.sub-title {
-  font-size: 14px; font-weight: 600;
-  color: #ffffff; letter-spacing: -0.01em;
-}
-
-.sub-period {
-  font-family: var(--mono); font-size: 11px;
-  color: var(--gray-400);
-}
-
-.sub-header-right {
-  display: flex; align-items: center; gap: 12px;
-}
-
-.upload-new-btn {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gray-300);
-  background: transparent;
-  border: 1px solid var(--gray-600);
-  padding: 6px 14px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.upload-new-btn:hover {
-  color: var(--yellow);
-  border-color: var(--yellow);
-}
-
-/* Content area */
-.content {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 32px 28px 80px;
-}
-
-/* ─── SECTION LABEL ───────────────────────────────────────── */
-.section-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--gray-400);
-  margin-bottom: 12px;
-  padding-left: 2px;
-  border-left: 2px solid var(--yellow);
-  padding-left: 10px;
-}
-
-/* ─── KPI CARDS ───────────────────────────────────────────── */
-.kpis {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--gray-700);
-  border: 1px solid var(--gray-700);
-  margin-bottom: 24px;
-}
-
-@media (max-width: 560px) {
-  .kpis { grid-template-columns: 1fr; }
-}
-
-.kpi {
-  background: var(--gray-900);
-  padding: 24px 24px 20px;
-  position: relative;
-}
-
-.kpi::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: transparent;
-}
-
-.kpi.foh::after { background: var(--yellow); }
-.kpi.boh::after { background: var(--yellow-d); }
-.kpi.total::after { background: var(--gray-600); }
-
-.kpi-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--gray-400);
-  margin-bottom: 12px;
-}
-
-.kpi-val {
-  font-size: 36px;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  color: #ffffff;
-  margin-bottom: 8px;
-}
-
-.kpi.foh .kpi-val { color: var(--yellow); }
-.kpi.boh .kpi-val { color: var(--yellow-d); }
-
-.kpi-sub {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--gray-400);
-}
-
-/* ─── ALERTS ──────────────────────────────────────────────── */
-.alerts {
-  display: flex; flex-direction: column; gap: 1px;
-  background: var(--gray-700);
-  border: 1px solid var(--gray-700);
-  margin-bottom: 24px;
-}
-
-.alert {
-  display: flex; gap: 14px; align-items: flex-start;
-  padding: 14px 18px;
-  font-size: 13px;
-  background: var(--gray-900);
-}
-
-.alert-stripe {
-  width: 3px; flex-shrink: 0; align-self: stretch;
-}
-
-.alert.ok     .alert-stripe { background: var(--green); }
-.alert.warn   .alert-stripe { background: var(--amber); }
-.alert.danger .alert-stripe { background: var(--red); }
-
-.alert-icon {
-  flex-shrink: 0;
-  font-size: 13px;
-  margin-top: 1px;
-}
-
-.alert.ok     .alert-icon { color: var(--green); }
-.alert.warn   .alert-icon { color: var(--amber); }
-.alert.danger .alert-icon { color: var(--red); }
-
-.alert-body { color: #c4c4c4; }
-.alert-body strong { color: #ffffff; font-weight: 600; }
-
-/* ─── CHART ───────────────────────────────────────────────── */
-.chart-panel {
-  background: var(--gray-900);
-  border: 1px solid var(--gray-700);
-  margin-bottom: 24px;
-}
-
-.chart-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--gray-800);
-}
-
-.chart-label {
-  font-family: var(--mono); font-size: 10px;
-  letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--gray-400);
-}
-
-.chart-legend {
-  display: flex; gap: 20px;
-}
-
-.leg {
-  display: flex; align-items: center; gap: 7px;
-  font-family: var(--mono); font-size: 10px;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--gray-400);
-}
-
-.leg-line {
-  width: 16px; height: 2px;
-}
-
-.chart-body {
-  padding: 20px 20px 16px;
-  position: relative; height: 200px;
-}
-
-/* ─── TABS ────────────────────────────────────────────────── */
-.tab-row {
-  display: flex;
-  border-bottom: 1px solid var(--gray-700);
-  margin-bottom: 16px;
-}
-
-.tab {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 10px 20px;
-  border: none;
-  cursor: pointer;
-  color: var(--gray-400);
-  background: transparent;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: all 0.15s;
-}
-
-.tab:hover { color: #d4d4d4; }
-
-.tab.active {
-  color: var(--yellow);
-  border-bottom-color: var(--yellow);
-}
-
-.panel { display: none; }
-.panel.active { display: block; }
-
-/* ─── TABLE ───────────────────────────────────────────────── */
-.tbl-wrap {
-  background: var(--gray-900);
-  border: 1px solid var(--gray-700);
-}
-
-table { width: 100%; border-collapse: collapse; }
-
-thead tr {
-  background: var(--gray-800);
-  border-bottom: 1px solid var(--gray-700);
-}
-
-thead th {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--gray-400);
-  text-align: left;
-  padding: 11px 16px;
-  font-weight: 400;
-}
-
-tbody td {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--gray-800);
-  vertical-align: middle;
-}
-
-tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover td { background: var(--gray-800); }
-
-.date-cell {
-  font-family: var(--mono); font-size: 11px;
-  color: var(--gray-400); white-space: nowrap;
-  min-width: 72px;
-}
-
-.bar-row { display: flex; align-items: center; gap: 12px; }
-.bar-bg  {
-  flex: 1; height: 4px;
-  background: var(--gray-700);
-  min-width: 60px;
-}
-.bar-fill { height: 100%; }
-.bar-pct  {
-  font-family: var(--mono); font-size: 12px;
-  font-weight: 500; min-width: 42px; text-align: right;
-}
-.bar-ct {
-  font-family: var(--mono); font-size: 10px;
-  color: var(--gray-400); min-width: 46px;
-}
-
-/* ─── TASK LISTS ──────────────────────────────────────────── */
-.two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--gray-700);
-  border: 1px solid var(--gray-700);
-}
-
-@media (max-width: 580px) {
-  .two-col { grid-template-columns: 1fr; }
-}
-
-.list-panel {
-  background: var(--gray-900);
-  padding: 20px;
-}
-
-.list-panel-head {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-weight: 500;
-  margin-bottom: 18px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--gray-700);
-}
-
-.list-panel-head.foh { color: var(--yellow); }
-.list-panel-head.boh { color: var(--yellow-d); }
-
-.tl-row {
-  display: flex; align-items: center;
-  gap: 10px; margin-bottom: 11px;
-}
-.tl-row:last-child { margin-bottom: 0; }
-
-.tl-name {
-  flex: 1; font-size: 12px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  color: #c4c4c4;
-}
-
-.tl-bar-bg { width: 52px; height: 3px; background: var(--gray-700); flex-shrink: 0; }
-.tl-bar-fill { height: 100%; }
-.tl-pct {
-  font-family: var(--mono); font-size: 11px;
-  min-width: 34px; text-align: right;
-  font-weight: 500; flex-shrink: 0;
-}
-
-/* ─── FOOTER ──────────────────────────────────────────────── */
-.report-footer {
-  margin-top: 48px;
-  padding-top: 20px;
-  border-top: 1px solid var(--gray-800);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.footer-text {
-  font-family: var(--mono); font-size: 10px;
-  letter-spacing: 0.06em; color: var(--gray-400);
-}
-
-.footer-brand {
-  font-family: var(--mono); font-size: 10px;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--gray-600);
-}
-@media (max-width: 768px) {
-  html { font-size: 16px; }
-}
-
-.back-btn { display: none; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; color: #888; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 0; margin-right: 12px; text-decoration: none; }
-.back-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.back-btn:hover { color: #fff; }
-@media (max-width: 768px) { .back-btn { display: flex; } .nav-logo { display: none; } }
 </style>
 </head>
 <body>
+<nav class="sidebar"><div class="sidebar-logo"><svg viewBox="0 0 28 28" width="28" height="28"><text x="14" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" fill="#000">GT</text></svg></div><a class="nav-btn " href="index.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="nav-tooltip">Home</span></a><a class="nav-btn " href="labor.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="nav-tooltip">Labor Scheduler</span></a><a class="nav-btn " href="sales.html"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="nav-tooltip">Sales Dashboard</span></a><a class="nav-btn " href="inventory.html"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><span class="nav-tooltip">Inventory Count</span></a><a class="nav-btn active" href="tasks.html"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="nav-tooltip">Task Report</span></a><a class="nav-btn " href="coverage.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg><span class="nav-tooltip">Table Coverage</span></a></nav>
+<div class="main-wrap">
 
-<!-- ── Top nav ── -->
-<nav class="topnav">
-  <a class="back-btn" href="index.html"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>GT Ops</a>
-  <div class="nav-logo">
-    <div class="nav-logo-mark"><svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg"><text x="14" y="20" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="15" fill="#000000">GT</text></svg></div>
-    <span class="nav-company">OpsIQ</span>
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <svg viewBox="0 0 18 18"><path d="M2 4h14v2H2V4zm0 4h9v2H2V8zm0 4h11v2H2v-2z"/></svg>
   </div>
-  <div class="nav-divider"></div>
-  <span class="nav-product">Operations Intelligence Platform</span>
-  <div class="nav-right">
-    <span class="nav-tag">Task Analytics</span>
-  </div>
+  <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard',this)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="nav-tooltip">Dashboard</span>
+  </button>
+  <button class="nav-btn" data-page="departments" onclick="showPage('departments',this)">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span class="nav-tooltip">Departments</span>
+  </button>
+  <button class="nav-btn" data-page="checklists" onclick="showPage('checklists',this)">
+    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span class="nav-tooltip">Checklists</span>
+  </button>
+  <button class="nav-btn" data-page="employees" onclick="showPage('employees',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span class="nav-tooltip">Employees</span>
+  </button>
 </nav>
 
-<div class="page">
+<!-- MAIN -->
+<div class="main-wrap">
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-name">Game Theory</span>
+      <span class="topbar-sep">/</span>
+      <span class="topbar-page" id="topbarPage">Dashboard</span>
+    </div>
+    <div class="topbar-right">
+      <span class="chip chip-blue">Mar 22 – 28, 2026</span>
+      <span class="chip chip-green">✓ 2 Bugs Fixed</span>
+    </div>
+  </header>
 
-  <!-- ── Upload screen ── -->
-  <div id="upload-screen">
-    <div class="up-kicker">Task Completion Module</div>
-    <h1 class="up-h1">FOH vs BOH<br>Weekly Report</h1>
-    <p class="up-sub">Upload your 7shifts export to generate a completion analysis</p>
+  <div class="page-content">
 
-    <div id="drop-zone">
-      <input type="file" id="file-input" accept=".csv">
-      <div class="up-icon-wrap">
-        <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L8 8m4-4 4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+    <!-- ══════════════════════════════════════════
+         PAGE: DASHBOARD
+    ══════════════════════════════════════════ -->
+    <div class="page-view active" id="page-dashboard">
+      <div class="page-header">
+        <h1>Weekly Task Completion</h1>
+        <p>Corrected · Start Date assignment · Status=1 as complete</p>
       </div>
-      <div class="up-label">Drop CSV file here</div>
-      <div class="up-hint">or click to browse files</div>
+      <div class="g4" id="kpiRow"></div>
+      <div class="sl">Department Overview</div>
+      <div class="g3" id="deptRow"></div>
+      <div class="sl">Performance</div>
+      <div class="g2">
+        <div class="panel">
+          <div class="panel-hd">
+            <div><div class="ph-title">Completion by Day &amp; Department</div><div class="ph-sub">% of tasks completed per shift day</div></div>
+            <div class="chart-legend" id="chartLegend"></div>
+          </div>
+          <div class="panel-bd"><div class="chart-wrap"><canvas id="mainChart"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><div><div class="ph-title">Attention Needed</div><div class="ph-sub">Checklists below 100%</div></div></div>
+          <div class="panel-bd-sm"><ul class="att-list" id="attentionList"></ul></div>
+        </div>
+      </div>
+      <div class="sl">Daily Breakdown</div>
+      <div class="tabs" id="tabsRow"></div>
+      <div id="dayPanels"></div>
     </div>
 
-
-
-    <div id="error-msg"></div>
-  </div>
-
-  <!-- ── Report screen ── -->
-  <div id="report-screen">
-
-    <div class="sub-header">
-      <div class="sub-header-left">
-        <span class="sub-title">Task Completion Report</span>
-        <span class="sub-period" id="rpt-period"></span>
+    <!-- ══════════════════════════════════════════
+         PAGE: DEPARTMENTS
+    ══════════════════════════════════════════ -->
+    <div class="page-view" id="page-departments">
+      <div class="page-header">
+        <h1>Departments</h1>
+        <p>Weekly breakdown by FOH, BOH &amp; Management</p>
       </div>
-      <div class="sub-header-right">
-        <button class="upload-new-btn" onclick="resetTool()">↑ Upload New File</button>
-      </div>
+      <div class="dept-tab-row" id="deptTabRow"></div>
+      <div id="deptViews"></div>
     </div>
 
-    <div class="content">
-
-      <div class="section-label" style="margin-bottom:12px">Performance Summary</div>
-
-      <div class="kpis">
-        <div class="kpi foh">
-          <div class="kpi-label">Front of House</div>
-          <div class="kpi-val" id="foh-val">—</div>
-          <div class="kpi-sub" id="foh-sub"></div>
-        </div>
-        <div class="kpi boh">
-          <div class="kpi-label">Back of House</div>
-          <div class="kpi-val" id="boh-val">—</div>
-          <div class="kpi-sub" id="boh-sub"></div>
-        </div>
-        <div class="kpi total">
-          <div class="kpi-label">Combined Total</div>
-          <div class="kpi-val" id="ov-val">—</div>
-          <div class="kpi-sub" id="ov-sub"></div>
-        </div>
+    <!-- ══════════════════════════════════════════
+         PAGE: CHECKLISTS
+    ══════════════════════════════════════════ -->
+    <div class="page-view" id="page-checklists">
+      <div class="page-header">
+        <h1>Checklists</h1>
+        <p>All checklists with weekly completion heat map</p>
       </div>
-
-      <div class="alerts" id="alerts"></div>
-
-      <div class="section-label">Daily Trend</div>
-
-      <div class="chart-panel">
-        <div class="chart-header">
-          <span class="chart-label">Completion Rate — 7 Day View</span>
-          <div class="chart-legend">
-            <div class="leg"><div class="leg-line" style="background:#f5e014"></div>FOH</div>
-            <div class="leg"><div class="leg-line" style="background:#c9b800"></div>BOH</div>
+      <div class="g3" id="clKpiRow"></div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="panel-hd">
+          <div><div class="ph-title">All Checklists</div><div class="ph-sub">Weekly view — each column is a shift day</div></div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:11px;color:var(--muted);font-family:'Geist Mono',monospace">Filter:</span>
+            <button class="pill blue" id="clf-all"  onclick="filterCL('all')"  style="cursor:pointer">All</button>
+            <button class="pill foh"  id="clf-foh"  onclick="filterCL('foh')"  style="cursor:pointer">FOH</button>
+            <button class="pill boh"  id="clf-boh"  onclick="filterCL('boh')"  style="cursor:pointer">BOH</button>
+            <button class="pill mgmt" id="clf-mgmt" onclick="filterCL('mgmt')" style="cursor:pointer">Mgmt</button>
           </div>
         </div>
-        <div class="chart-body"><canvas id="chart"></canvas></div>
-      </div>
-
-      <div class="tab-row">
-        <button class="tab active" onclick="switchTab('daily')">Daily Breakdown</button>
-        <button class="tab" onclick="switchTab('lists')">By Task List</button>
-      </div>
-
-      <div id="panel-daily" class="panel active">
-        <div class="tbl-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:90px">Date</th>
-                <th>Front of House</th>
-                <th>Back of House</th>
-              </tr>
-            </thead>
-            <tbody id="tbl-body"></tbody>
-          </table>
+        <div style="overflow-x:auto">
+          <table class="cl-table" id="clTable"></table>
         </div>
       </div>
-
-      <div id="panel-lists" class="panel">
-        <div class="two-col" id="lists-grid"></div>
-      </div>
-
-      <div class="report-footer">
-        <span class="footer-text" id="rpt-footer"></span>
-        <span class="footer-brand">OpsIQ · Operations Intelligence Platform</span>
-      </div>
-
     </div>
-  </div>
 
-</div>
+    <!-- ══════════════════════════════════════════
+         PAGE: EMPLOYEES
+    ══════════════════════════════════════════ -->
+    <div class="page-view" id="page-employees">
+      <div class="page-header">
+        <h1>Employees</h1>
+        <p>Individual task completion for the week</p>
+      </div>
+      <div class="g4" id="empKpiRow"></div>
+      <div class="g2-left" style="margin-bottom:0">
+        <div class="panel">
+          <div class="panel-hd"><div><div class="ph-title">Tasks by Department</div><div class="ph-sub">FOH · BOH · Management</div></div></div>
+          <div class="panel-bd"><div class="chart-wrap"><canvas id="empChart"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd">
+            <div><div class="ph-title">All Staff</div><div class="ph-sub">Sorted by tasks completed</div></div>
+          </div>
+          <div style="overflow-x:auto"><table class="emp-table" id="empTable"></table></div>
+        </div>
+      </div>
+    </div>
 
+  </div><!-- /page-content -->
+</div><!-- /main-wrap -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-const $ = id => document.getElementById(id);
+// ────────────────────────────────────────────
+// DATA
+// ────────────────────────────────────────────
+const DAYS = ['2026-03-22','2026-03-23','2026-03-24','2026-03-25','2026-03-26','2026-03-27','2026-03-28'];
+const DAY_SHORT = {
+  '2026-03-22':'Sun','2026-03-23':'Mon','2026-03-24':'Tue',
+  '2026-03-25':'Wed','2026-03-26':'Thu','2026-03-27':'Fri','2026-03-28':'Sat'
+};
 
-function pctColor(v) {
-  if (v < 50)  return '#e53e3e';
-  if (v < 85)  return '#e8922a';
-  if (v >= 100) return '#f5e014';
-  return '#c9b800';
+const DM = {
+  foh:{label:'FOH',full:'Front of House',color:'#6941c6',bar:'rgba(105,65,198,0.75)',bg:'rgba(105,65,198,0.12)'},
+  boh:{label:'BOH',full:'Back of House', color:'#c4320a',bar:'rgba(196,50,10,0.75)', bg:'rgba(196,50,10,0.10)'},
+  mgmt:{label:'Mgmt',full:'Management',  color:'#027a48',bar:'rgba(2,122,72,0.75)',   bg:'rgba(2,122,72,0.12)'}
+};
+
+const rawData = [
+  {date:"2026-03-22",label:"Sun 3/22",short:"Sun",lists:[
+    {name:"BOH Closing Checklist",complete:29,total:29,pct:100,completers:["Christina Miller","Orlando Palacios"],dept:"boh"},
+    {name:"BOH Opening Checklist",complete:18,total:18,pct:100,completers:["Sheila Bryant","Skyler Shepherd"],dept:"boh"},
+    {name:"BOH Sunday Cleaning List",complete:2,total:2,pct:100,completers:["Orlando Palacios"],dept:"boh"},
+    {name:"Bar Closing Checklist",complete:20,total:20,pct:100,completers:["Hannah Elder"],dept:"foh"},
+    {name:"Bar Opening Checklist",complete:13,total:13,pct:100,completers:["Topher Buerkle"],dept:"foh"},
+    {name:"Lunch/Brunch Closing",complete:10,total:10,pct:100,completers:["Nathan Cochenour"],dept:"foh"},
+    {name:"Manager Opening Check",complete:9,total:10,pct:90,completers:["Skyler Shepherd"],dept:"mgmt"},
+    {name:"Manager/Supervisor Closing",complete:13,total:13,pct:100,completers:["Christina Miller"],dept:"mgmt"},
+    {name:"Server | 1st Cut Closing (Sun)",complete:6,total:6,pct:100,completers:["Nathan Cochenour"],dept:"foh"},
+    {name:"Server | CLOSER Duties (Sun)",complete:8,total:8,pct:100,completers:["Hunter Pettijohn"],dept:"foh"},
+    {name:"Server | Closer Closing (Sun)",complete:12,total:12,pct:100,completers:["Christina Miller","Hunter Pettijohn"],dept:"foh"},
+    {name:"Server | Opening Checklist",complete:16,total:16,pct:100,completers:["Butters Roten"],dept:"foh"},
+    {name:"Server | Sunday Weekly Cleaning",complete:5,total:5,pct:100,completers:["Christina Miller","Hunter Pettijohn"],dept:"foh"}
+  ]},
+  {date:"2026-03-23",label:"Mon 3/23",short:"Mon",lists:[
+    {name:"BOH Closing Checklist",complete:0,total:29,pct:0,completers:[],dept:"boh"},
+    {name:"BOH Monday Cleaning List",complete:0,total:4,pct:0,completers:[],dept:"boh"},
+    {name:"BOH Opening Checklist",complete:0,total:18,pct:0,completers:[],dept:"boh"},
+    {name:"Bar Closing Checklist",complete:21,total:21,pct:100,completers:["Nico Opheim"],dept:"foh"},
+    {name:"Bar Monday Cleaning List",complete:4,total:4,pct:100,completers:["Nico Opheim"],dept:"foh"},
+    {name:"Bar Opening Checklist",complete:13,total:13,pct:100,completers:["Nico Opheim"],dept:"foh"},
+    {name:"Manager Opening Check",complete:10,total:10,pct:100,completers:["Christina Miller"],dept:"mgmt"},
+    {name:"Manager/Supervisor Closing",complete:13,total:13,pct:100,completers:["Christina Miller"],dept:"mgmt"},
+    {name:"Server | Monday Weekly Cleaning",complete:4,total:4,pct:100,completers:["Selah Morris"],dept:"foh"},
+    {name:"Server | Closer Closing (Mon/Tue)",complete:12,total:12,pct:100,completers:["Selah Morris"],dept:"foh"},
+    {name:"Server | Opening Checklist",complete:16,total:16,pct:100,completers:["Selah Morris"],dept:"foh"}
+  ]},
+  {date:"2026-03-24",label:"Tue 3/24",short:"Tue",lists:[
+    {name:"BOH Closing Checklist",complete:0,total:29,pct:0,completers:[],dept:"boh"},
+    {name:"BOH Opening Checklist",complete:18,total:18,pct:100,completers:["Trevor Allen"],dept:"boh"},
+    {name:"BOH Tuesday Cleaning List",complete:3,total:3,pct:100,completers:["Trevor Allen"],dept:"boh"},
+    {name:"Bar Closing Checklist",complete:21,total:21,pct:100,completers:["Nico Opheim"],dept:"foh"},
+    {name:"Bar Opening Checklist",complete:13,total:13,pct:100,completers:["Nico Opheim"],dept:"foh"},
+    {name:"Bar Tuesday Cleaning List",complete:4,total:4,pct:100,completers:["Nico Opheim"],dept:"foh"},
+    {name:"Manager Opening Check",complete:10,total:10,pct:100,completers:["Christina Miller"],dept:"mgmt"},
+    {name:"Manager/Supervisor Closing",complete:12,total:13,pct:92,completers:["Christina Miller"],dept:"mgmt"},
+    {name:"Server | Closer Closing (Mon/Tue)",complete:12,total:12,pct:100,completers:["Christina Miller","Selah Morris"],dept:"foh"},
+    {name:"Server | Opening Checklist",complete:16,total:16,pct:100,completers:["Selah Morris"],dept:"foh"},
+    {name:"Server | Tuesday Weekly Cleaning",complete:5,total:5,pct:100,completers:["Selah Morris"],dept:"foh"}
+  ]},
+  {date:"2026-03-25",label:"Wed 3/25",short:"Wed",isBugDay:true,lists:[
+    {name:"BOH Closing Checklist",complete:29,total:29,pct:100,completers:["Jesus Trejo","Trevor Allen"],dept:"boh"},
+    {name:"BOH Opening Checklist",complete:18,total:18,pct:100,completers:["Trevor Allen"],dept:"boh"},
+    {name:"BOH Wednesday Cleaning List",complete:3,total:3,pct:100,completers:["Trevor Allen"],dept:"boh"},
+    {name:"Bar Closing Checklist",complete:21,total:21,pct:100,completers:["Topher Buerkle"],dept:"foh"},
+    {name:"Bar Opening Checklist",complete:13,total:13,pct:100,completers:["Topher Buerkle"],dept:"foh"},
+    {name:"Bar Wednesday Cleaning List",complete:3,total:3,pct:100,completers:["Topher Buerkle"],dept:"foh"},
+    {name:"Manager Opening Check",complete:10,total:10,pct:100,completers:["Skyler Shepherd"],dept:"mgmt"},
+    {name:"Manager/Supervisor Closing",complete:13,total:13,pct:100,completers:["Skyler Shepherd"],dept:"mgmt"},
+    {name:"Server | CLOSER Duties (Wed/Thu)",complete:10,total:10,pct:100,completers:["Macie Boone"],dept:"foh"},
+    {name:"Server | Opening Checklist",complete:0,total:16,pct:0,completers:[],dept:"foh"},
+    {name:"Server | Wednesday Weekly Cleaning",complete:6,total:6,pct:100,completers:["Macie Boone"],dept:"foh"}
+  ]},
+  {date:"2026-03-26",label:"Thu 3/26",short:"Thu",lists:[
+    {name:"1st Cut Closing Duties (Thu)",complete:7,total:7,pct:100,completers:["Nico Opheim"],dept:"foh"},
+    {name:"BOH Closing Checklist",complete:29,total:29,pct:100,completers:["Trevor Allen"],dept:"boh"},
+    {name:"BOH Opening Checklist",complete:18,total:18,pct:100,completers:["Trevor Allen"],dept:"boh"},
+    {name:"BOH Thursday Cleaning List",complete:2,total:2,pct:100,completers:["Trevor Allen"],dept:"boh"},
+    {name:"Bar Closing Checklist",complete:21,total:21,pct:100,completers:["Topher Buerkle"],dept:"foh"},
+    {name:"Bar Opening Checklist",complete:13,total:13,pct:100,completers:["Topher Buerkle"],dept:"foh"},
+    {name:"Bar Thursday Cleaning List",complete:3,total:3,pct:100,completers:["Topher Buerkle"],dept:"foh"},
+    {name:"Manager Opening Check",complete:9,total:10,pct:90,completers:["Skyler Shepherd"],dept:"mgmt"},
+    {name:"Manager/Supervisor Closing",complete:13,total:13,pct:100,completers:["Skyler Shepherd"],dept:"mgmt"},
+    {name:"Server | CLOSER Duties (Wed/Thu)",complete:10,total:10,pct:100,completers:["Macie Boone"],dept:"foh"},
+    {name:"Server | Opening Checklist",complete:15,total:16,pct:94,completers:["Macie Boone"],dept:"foh"},
+    {name:"Server | Thursday Weekly Cleaning",complete:3,total:3,pct:100,completers:["Macie Boone","Nico Opheim"],dept:"foh"}
+  ]},
+  {date:"2026-03-27",label:"Fri 3/27",short:"Fri",lists:[
+    {name:"BOH Closing Checklist",complete:0,total:29,pct:0,completers:[],dept:"boh"},
+    {name:"BOH Friday Cleaning List",complete:0,total:2,pct:0,completers:[],dept:"boh"},
+    {name:"BOH Opening Checklist",complete:0,total:18,pct:0,completers:[],dept:"boh"},
+    {name:"Bar Closing Checklist",complete:21,total:21,pct:100,completers:["Topher Buerkle"],dept:"foh"},
+    {name:"Bar Opening Checklist",complete:13,total:13,pct:100,completers:["Selah Morris"],dept:"foh"},
+    {name:"Host/Guru Closing List 2",complete:5,total:5,pct:100,completers:["Nathan Cochenour"],dept:"foh"},
+    {name:"Lunch/Brunch Closing",complete:10,total:10,pct:100,completers:["Selah Morris"],dept:"foh"},
+    {name:"Manager Opening Check",complete:0,total:10,pct:0,completers:[],dept:"mgmt"},
+    {name:"Manager/Supervisor Closing",complete:13,total:13,pct:100,completers:["Christina Miller"],dept:"mgmt"},
+    {name:"Server | 1st Cut Closing (Fri/Sat)",complete:6,total:6,pct:100,completers:["Selah Morris"],dept:"foh"},
+    {name:"Server | CLOSER Duties (Fri/Sat)",complete:8,total:8,pct:100,completers:["Nico Opheim"],dept:"foh"},
+    {name:"Server | Opening Checklist",complete:16,total:16,pct:100,completers:["Selah Morris"],dept:"foh"}
+  ]},
+  {date:"2026-03-28",label:"Sat 3/28",short:"Sat",lists:[
+    {name:"BOH Closing Checklist",complete:29,total:29,pct:100,completers:["Christina Miller","Orlando Palacios"],dept:"boh"},
+    {name:"BOH Opening Checklist",complete:18,total:18,pct:100,completers:["Orlando Palacios"],dept:"boh"},
+    {name:"Bar Closing Checklist",complete:21,total:21,pct:100,completers:["Topher Buerkle"],dept:"foh"},
+    {name:"Bar Opening Checklist",complete:13,total:13,pct:100,completers:["Topher Buerkle"],dept:"foh"},
+    {name:"Host/Guru Closing List 2",complete:5,total:5,pct:100,completers:["Nathan Cochenour"],dept:"foh"},
+    {name:"Lunch/Brunch Closing",complete:10,total:10,pct:100,completers:["Hunter Pettijohn"],dept:"foh"},
+    {name:"Manager Opening Check",complete:8,total:10,pct:80,completers:["Skyler Shepherd"],dept:"mgmt"},
+    {name:"Manager/Supervisor Closing",complete:13,total:13,pct:100,completers:["Christina Miller"],dept:"mgmt"},
+    {name:"Server | 1st Cut Closing (Fri/Sat)",complete:6,total:6,pct:100,completers:["Ella Vasquez"],dept:"foh"},
+    {name:"Server | CLOSER Duties (Fri/Sat)",complete:8,total:8,pct:100,completers:["Macie Boone","Destiny Delgado"],dept:"foh"},
+    {name:"Server | Opening Checklist",complete:16,total:16,pct:100,completers:["Hunter Pettijohn"],dept:"foh"}
+  ]}
+];
+
+const empData = [
+  {name:"Topher Buerkle",tasks:162,lists:11,days:6,foh:162,boh:0,mgmt:0},
+  {name:"Orlando Palacios",tasks:116,lists:6,days:3,foh:0,boh:116,mgmt:0},
+  {name:"Christina Miller",tasks:111,lists:16,days:6,foh:11,boh:3,mgmt:97},
+  {name:"Trevor Allen",tasks:108,lists:8,days:3,foh:0,boh:108,mgmt:0},
+  {name:"Selah Morris",tasks:107,lists:10,days:3,foh:107,boh:0,mgmt:0},
+  {name:"Nico Opheim",tasks:93,lists:9,days:4,foh:93,boh:0,mgmt:0},
+  {name:"Skyler Shepherd",tasks:65,lists:7,days:4,foh:0,boh:3,mgmt:62},
+  {name:"Macie Boone",tasks:57,lists:8,days:4,foh:57,boh:0,mgmt:0},
+  {name:"Hunter Pettijohn",tasks:49,lists:5,days:2,foh:49,boh:0,mgmt:0},
+  {name:"Nathan Cochenour",tasks:31,lists:5,days:4,foh:31,boh:0,mgmt:0},
+  {name:"Hannah Elder",tasks:20,lists:1,days:1,foh:20,boh:0,mgmt:0},
+  {name:"Butters Roten",tasks:16,lists:1,days:1,foh:16,boh:0,mgmt:0},
+  {name:"Sheila Bryant",tasks:15,lists:1,days:1,foh:0,boh:15,mgmt:0},
+  {name:"Jesus Trejo",tasks:12,lists:1,days:1,foh:0,boh:12,mgmt:0},
+  {name:"Destiny Delgado",tasks:10,lists:2,days:2,foh:10,boh:0,mgmt:0},
+  {name:"Ella Vasquez",tasks:8,lists:2,days:2,foh:8,boh:0,mgmt:0},
+  {name:"Godfriend Shabani",tasks:6,lists:1,days:1,foh:0,boh:6,mgmt:0}
+];
+
+const checklistData = [
+  {name:"BOH Closing Checklist",dept:"boh",total:232,complete:145,pct:62,byDay:{"2026-03-22":{c:29,t:29},"2026-03-23":{c:0,t:29},"2026-03-24":{c:0,t:29},"2026-03-25":{c:29,t:29},"2026-03-26":{c:29,t:29},"2026-03-27":{c:0,t:29},"2026-03-28":{c:29,t:29}}},
+  {name:"BOH Opening Checklist",dept:"boh",total:144,complete:108,pct:75,byDay:{"2026-03-22":{c:18,t:18},"2026-03-23":{c:0,t:18},"2026-03-24":{c:18,t:18},"2026-03-25":{c:18,t:18},"2026-03-26":{c:18,t:18},"2026-03-27":{c:0,t:18},"2026-03-28":{c:18,t:18}}},
+  {name:"BOH Sunday Cleaning List",dept:"boh",total:2,complete:2,pct:100,byDay:{"2026-03-22":{c:2,t:2}}},
+  {name:"BOH Monday Cleaning List",dept:"boh",total:4,complete:0,pct:0,byDay:{"2026-03-23":{c:0,t:4}}},
+  {name:"BOH Tuesday Cleaning List",dept:"boh",total:3,complete:3,pct:100,byDay:{"2026-03-24":{c:3,t:3}}},
+  {name:"BOH Wednesday Cleaning List",dept:"boh",total:3,complete:3,pct:100,byDay:{"2026-03-25":{c:3,t:3}}},
+  {name:"BOH Thursday Cleaning List",dept:"boh",total:2,complete:2,pct:100,byDay:{"2026-03-26":{c:2,t:2}}},
+  {name:"BOH Friday Cleaning List",dept:"boh",total:2,complete:0,pct:0,byDay:{"2026-03-27":{c:0,t:2}}},
+  {name:"Bar Closing Checklist",dept:"foh",total:166,complete:166,pct:100,byDay:{"2026-03-22":{c:20,t:20},"2026-03-23":{c:21,t:21},"2026-03-24":{c:21,t:21},"2026-03-25":{c:21,t:21},"2026-03-26":{c:21,t:21},"2026-03-27":{c:21,t:21},"2026-03-28":{c:21,t:21}}},
+  {name:"Bar Opening Checklist",dept:"foh",total:91,complete:91,pct:100,byDay:{"2026-03-22":{c:13,t:13},"2026-03-23":{c:13,t:13},"2026-03-24":{c:13,t:13},"2026-03-25":{c:13,t:13},"2026-03-26":{c:13,t:13},"2026-03-27":{c:13,t:13},"2026-03-28":{c:13,t:13}}},
+  {name:"Bar Monday Cleaning List",dept:"foh",total:4,complete:4,pct:100,byDay:{"2026-03-23":{c:4,t:4}}},
+  {name:"Bar Tuesday Cleaning List",dept:"foh",total:4,complete:4,pct:100,byDay:{"2026-03-24":{c:4,t:4}}},
+  {name:"Bar Wednesday Cleaning List",dept:"foh",total:3,complete:3,pct:100,byDay:{"2026-03-25":{c:3,t:3}}},
+  {name:"Bar Thursday Cleaning List",dept:"foh",total:3,complete:3,pct:100,byDay:{"2026-03-26":{c:3,t:3}}},
+  {name:"Host/Guru Closing List 2",dept:"foh",total:15,complete:15,pct:100,byDay:{"2026-03-22":{c:5,t:5},"2026-03-27":{c:5,t:5},"2026-03-28":{c:5,t:5}}},
+  {name:"Lunch/Brunch Closing",dept:"foh",total:30,complete:30,pct:100,byDay:{"2026-03-22":{c:10,t:10},"2026-03-27":{c:10,t:10},"2026-03-28":{c:10,t:10}}},
+  {name:"Server | Opening Checklist",dept:"foh",total:112,complete:95,pct:85,byDay:{"2026-03-22":{c:16,t:16},"2026-03-23":{c:16,t:16},"2026-03-24":{c:16,t:16},"2026-03-25":{c:0,t:16},"2026-03-26":{c:15,t:16},"2026-03-27":{c:16,t:16},"2026-03-28":{c:16,t:16}}},
+  {name:"Server | 1st Cut Closing (Fri/Sat)",dept:"foh",total:18,complete:18,pct:100,byDay:{"2026-03-22":{c:6,t:6},"2026-03-27":{c:6,t:6},"2026-03-28":{c:6,t:6}}},
+  {name:"Server | CLOSER Duties (Fri/Sat)",dept:"foh",total:24,complete:24,pct:100,byDay:{"2026-03-22":{c:8,t:8},"2026-03-27":{c:8,t:8},"2026-03-28":{c:8,t:8}}},
+  {name:"Server | CLOSER Duties (Sun)",dept:"foh",total:8,complete:8,pct:100,byDay:{"2026-03-22":{c:8,t:8}}},
+  {name:"Server | CLOSER Duties (Wed/Thu)",dept:"foh",total:20,complete:20,pct:100,byDay:{"2026-03-25":{c:10,t:10},"2026-03-26":{c:10,t:10}}},
+  {name:"Server | Closer Closing (Mon/Tue)",dept:"foh",total:24,complete:24,pct:100,byDay:{"2026-03-23":{c:12,t:12},"2026-03-24":{c:12,t:12}}},
+  {name:"Server | Closer Closing (Sun)",dept:"foh",total:12,complete:12,pct:100,byDay:{"2026-03-22":{c:12,t:12}}},
+  {name:"Server | Closer Closing (Fri/Sat)",dept:"foh",total:11,complete:11,pct:100,byDay:{"2026-03-22":{c:11,t:11}}},
+  {name:"Server | Sunday Weekly Cleaning",dept:"foh",total:5,complete:5,pct:100,byDay:{"2026-03-22":{c:5,t:5}}},
+  {name:"Server | Monday Weekly Cleaning",dept:"foh",total:4,complete:4,pct:100,byDay:{"2026-03-23":{c:4,t:4}}},
+  {name:"Server | Tuesday Weekly Cleaning",dept:"foh",total:5,complete:5,pct:100,byDay:{"2026-03-24":{c:5,t:5}}},
+  {name:"Server | Wednesday Weekly Cleaning",dept:"foh",total:6,complete:6,pct:100,byDay:{"2026-03-25":{c:6,t:6}}},
+  {name:"Server | Thursday Weekly Cleaning",dept:"foh",total:3,complete:3,pct:100,byDay:{"2026-03-26":{c:3,t:3}}},
+  {name:"1st Cut Closing Duties (Thu)",dept:"foh",total:7,complete:7,pct:100,byDay:{"2026-03-26":{c:7,t:7}}},
+  {name:"Manager Opening Check",dept:"mgmt",total:80,complete:56,pct:70,byDay:{"2026-03-22":{c:9,t:10},"2026-03-23":{c:10,t:10},"2026-03-24":{c:10,t:10},"2026-03-25":{c:10,t:10},"2026-03-26":{c:9,t:10},"2026-03-27":{c:0,t:10},"2026-03-28":{c:8,t:10}}},
+  {name:"Manager/Supervisor Closing",dept:"mgmt",total:104,complete:103,pct:99,byDay:{"2026-03-22":{c:13,t:13},"2026-03-23":{c:13,t:13},"2026-03-24":{c:12,t:13},"2026-03-25":{c:13,t:13},"2026-03-26":{c:13,t:13},"2026-03-27":{c:13,t:13},"2026-03-28":{c:13,t:13}}}
+];
+
+// ────────────────────────────────────────────
+// HELPERS
+// ────────────────────────────────────────────
+function pc(p){return p===100?'green':p===0?'red':'amber'}
+function dt(lists,dept){
+  const f=dept?lists.filter(l=>l.dept===dept):lists;
+  const t=f.reduce((s,l)=>s+l.total,0),c=f.reduce((s,l)=>s+l.complete,0);
+  return{total:t,complete:c,pct:t>0?Math.round(c/t*100):0,lists:f.length,lists100:f.filter(l=>l.pct===100).length};
+}
+function avatarColor(n){const cols=['#6941c6','#1d4ed8','#c4320a','#027a48','#b54708','#0369a1','#7c3aed'];return cols[n.charCodeAt(0)%cols.length]}
+function initials(n){return n.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase()}
+
+const allLists=rawData.flatMap(d=>d.lists);
+const ov=dt(allLists,null),fohAll=dt(allLists,'foh'),bohAll=dt(allLists,'boh'),mgmtAll=dt(allLists,'mgmt');
+const missed=allLists.filter(l=>l.pct===0).length;
+
+// ────────────────────────────────────────────
+// PAGE NAVIGATION
+// ────────────────────────────────────────────
+const pageNames={dashboard:'Dashboard',departments:'Departments',checklists:'Checklists',employees:'Employees'};
+function showPage(id,btn){
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('topbarPage').textContent=pageNames[id];
 }
 
-function fmt1(v) { return v.toFixed(1) + '%'; }
+// ────────────────────────────────────────────
+// DASHBOARD PAGE
+// ────────────────────────────────────────────
+// KPIs
+document.getElementById('kpiRow').innerHTML=[
+  {l:'Overall Completion',v:ov.pct+'%',s:'',dot:'#1d4ed8',ft:`${ov.complete} of ${ov.total} tasks`},
+  {l:'Checklists Passed',v:ov.lists100,s:'/'+allLists.length,dot:'#079455',ft:'100% completion'},
+  {l:'Checklists Missed',v:missed,s:'',dot:'#d92d20',ft:'0% — not started'},
+  {l:'Days Tracked',v:rawData.length,s:'/7',dot:'#667085',ft:'Mar 22 – Mar 28'}
+].map(k=>`<div class="kpi"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}<span class="kpi-sub">${k.s}</span></div><div class="kpi-ft"><span class="dot" style="background:${k.dot}"></span>${k.ft}</div></div>`).join('');
 
-function shortDate(iso) {
-  const [,m,d] = iso.split('-');
-  return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+ +d;
+// Dept Cards
+document.getElementById('deptRow').innerHTML=['foh','boh','mgmt'].map(key=>{
+  const d=key==='foh'?fohAll:key==='boh'?bohAll:mgmtAll;
+  const pctC=d.pct===100?'#079455':d.pct<70?'#d92d20':'#f79009';
+  return`<div class="dept-card ${key}">
+    <div class="dc-top">
+      <div style="display:flex;align-items:center;gap:8px"><span class="pill ${key}">${DM[key].label}</span><span style="font-size:13px;color:var(--text2);font-weight:500">${DM[key].full}</span></div>
+      <div class="dc-pct ${key}">${d.pct}%</div>
+    </div>
+    <div class="dc-bar"><div class="dc-fill ${key}" style="width:${d.pct}%"></div></div>
+    <div class="dc-stats">
+      <div class="dc-stat-val">${d.complete}<span style="color:var(--muted2);font-weight:500;font-size:13px">/${d.total}</span><div class="dc-stat-lbl">Tasks Done</div></div>
+      <div class="dc-stat-val">${d.lists100}<span style="color:var(--muted2);font-weight:500;font-size:13px">/${d.lists}</span><div class="dc-stat-lbl">Lists 100%</div></div>
+      <div class="dc-stat-val" style="color:${pctC}">${d.lists-d.lists100}<div class="dc-stat-lbl">Incomplete</div></div>
+    </div>
+  </div>`;
+}).join('');
+
+// Chart Legend
+document.getElementById('chartLegend').innerHTML=['foh','boh','mgmt'].map(k=>`<div class="cl-item"><div class="cl-dot" style="background:${DM[k].bar}"></div>${DM[k].label}</div>`).join('');
+
+// Main Chart
+new Chart(document.getElementById('mainChart'),{
+  type:'bar',
+  data:{labels:rawData.map(d=>d.short),datasets:['foh','boh','mgmt'].map(k=>({
+    label:DM[k].full,data:rawData.map(d=>dt(d.lists,k).pct),
+    backgroundColor:DM[k].bg,borderColor:DM[k].bar,borderWidth:1.5,borderRadius:4,borderSkipped:false
+  }))},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#101828',titleColor:'#f9fafb',bodyColor:'#d0d5dd',borderColor:'#1d2939',borderWidth:1,padding:10,cornerRadius:8,
+    callbacks:{title:i=>rawData[i[0].dataIndex].label,label:ctx=>{const d=rawData[ctx.dataIndex],k=['foh','boh','mgmt'][ctx.datasetIndex],t=dt(d.lists,k);return` ${DM[k].label}: ${ctx.raw}% (${t.complete}/${t.total})`}}}},
+    scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#667085',font:{family:'Geist Mono',size:12}}},y:{min:0,max:100,grid:{color:'#f2f4f7'},border:{display:false},ticks:{color:'#98a2b3',font:{family:'Geist Mono',size:11},callback:v=>v+'%',stepSize:25}}}}
+});
+
+// Attention list
+const attention=[];
+rawData.forEach(d=>d.lists.filter(l=>l.pct<100).forEach(l=>attention.push({name:l.name,day:d.short,pct:l.pct,dept:l.dept})));
+attention.sort((a,b)=>a.pct-b.pct);
+document.getElementById('attentionList').innerHTML=attention.slice(0,10).map(a=>`
+  <li class="att-item"><span class="pill ${a.dept}" style="font-size:10px;padding:2px 6px">${DM[a.dept].label}</span><span class="att-name" title="${a.name}">${a.name}</span><span class="att-day">${a.day}</span><span class="badge ${pc(a.pct)}">${a.pct}%</span></li>`).join('');
+
+// Tabs + Day Panels
+const tabsRow=document.getElementById('tabsRow'),panelsEl=document.getElementById('dayPanels');
+rawData.forEach((day,idx)=>{
+  const t=dt(day.lists,null);
+  const btn=document.createElement('button');btn.className='tab'+(idx===0?' active':'');
+  btn.innerHTML=`<span>${day.short}</span><span class="tab-sub">${t.pct}%</span>`;
+  btn.onclick=()=>{document.querySelectorAll('#tabsRow .tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.day-panel').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('dp-'+idx).classList.add('active')};
+  tabsRow.appendChild(btn);
+  const minis=['foh','boh','mgmt'].map(key=>{const d=dt(day.lists,key);if(!d.total)return'';const pC=d.pct===100?'#079455':d.pct<60?'#d92d20':'#f79009';return`<div class="ddm"><div><div class="ddm-lbl">${DM[key].full}</div><div class="ddm-bar"><div class="ddm-fill" style="width:${d.pct}%;background:${DM[key].color}"></div></div></div><div style="text-align:right"><div class="ddm-pct" style="color:${pC}">${d.pct}%</div><div class="ddm-count">${d.complete}/${d.total}</div></div></div>`}).join('');
+  const fixB=day.isBugDay?`<div class="fix-banner"><span class="fix-icon">⚑</span><span><strong>Bug corrections applied:</strong> BOH Closing now correctly shows 100% (was 0%). Server Opening now correctly shows 0% (was 100%).</span></div>`:'';
+  const cards=day.lists.map(l=>{const col=pc(l.pct),ct=l.completers.length?l.completers.join(', '):'—';return`<div class="lc"><div class="lc-top"><span class="pill ${l.dept}" style="font-size:10px;padding:2px 6px;margin-top:1px">${DM[l.dept].label}</span><div class="lc-name">${l.name}</div><span class="badge ${col}" style="margin-top:1px">${l.pct}%</span></div><div class="pt"><div class="pf ${col}" style="width:${l.pct}%"></div></div><div class="lc-ft"><span class="lc-count">${l.complete}/${l.total} tasks</span><span class="lc-comp" title="${ct}">${ct}</span></div></div>`}).join('');
+  const panel=document.createElement('div');panel.className='day-panel'+(idx===0?' active':'');panel.id='dp-'+idx;
+  panel.innerHTML=fixB+`<div class="day-dept-row">${minis}</div><div class="cards-grid">${cards}</div>`;
+  panelsEl.appendChild(panel);
+});
+
+// ────────────────────────────────────────────
+// DEPARTMENTS PAGE
+// ────────────────────────────────────────────
+const deptTabRow=document.getElementById('deptTabRow'),deptViews=document.getElementById('deptViews');
+['foh','boh','mgmt'].forEach((key,i)=>{
+  const btn=document.createElement('button');btn.className='dept-tab'+(i===0?' active '+key:'');
+  btn.textContent=DM[key].full;
+  btn.onclick=()=>{document.querySelectorAll('.dept-tab').forEach(b=>{b.classList.remove('active','foh','boh','mgmt')});document.querySelectorAll('.dept-view').forEach(v=>v.classList.remove('active'));btn.classList.add('active',key);document.getElementById('dv-'+key).classList.add('active')};
+  deptTabRow.appendChild(btn);
+
+  const d=key==='foh'?fohAll:key==='boh'?bohAll:mgmtAll;
+  const dailyBoxes=rawData.map(day=>{
+    const dd=dt(day.lists,key);if(!dd.total)return`<div class="dday"><div class="dday-label">${day.short}</div><div class="dday-pct" style="color:var(--muted2)">—</div><div class="dday-count">N/A</div><div class="dday-bar"></div></div>`;
+    const pC=dd.pct===100?DM[key].color:dd.pct===0?'#d92d20':'#f79009';
+    return`<div class="dday"><div class="dday-label">${day.short}</div><div class="dday-pct" style="color:${pC}">${dd.pct}%</div><div class="dday-count">${dd.complete}/${dd.total}</div><div class="dday-bar"><div class="dday-fill" style="width:${dd.pct}%;background:${pC}"></div></div></div>`;
+  }).join('');
+
+  const deptLists=allLists.filter(l=>l.dept===key);
+  const incomplete=deptLists.filter(l=>l.pct<100);
+  const listCards=deptLists.sort((a,b)=>a.pct-b.pct).map(l=>{
+    const col=pc(l.pct),ct=l.completers?l.completers.join(', '):'—';
+    return`<div class="lc"><div class="lc-top"><div class="lc-name">${l.name}</div><span class="badge ${col}">${l.pct}%</span></div><div class="pt"><div class="pf ${col}" style="width:${l.pct}%"></div></div><div class="lc-ft"><span class="lc-count">${l.complete}/${l.total} tasks</span><span class="lc-comp">${ct}</span></div></div>`;
+  }).join('');
+
+  const view=document.createElement('div');view.className='dept-view'+(i===0?' active':'');view.id='dv-'+key;
+  view.innerHTML=`
+    <div class="g3" style="margin-bottom:20px">
+      <div class="kpi"><div class="kpi-lbl">Completion Rate</div><div class="kpi-val" style="color:${DM[key].color}">${d.pct}%</div><div class="kpi-ft"><span class="dot" style="background:${DM[key].color}"></span>${d.complete} of ${d.total} tasks</div></div>
+      <div class="kpi"><div class="kpi-lbl">Lists Completed</div><div class="kpi-val">${d.lists100}<span class="kpi-sub">/${d.lists}</span></div><div class="kpi-ft"><span class="dot" style="background:#079455"></span>100% completion</div></div>
+      <div class="kpi"><div class="kpi-lbl">Incomplete Lists</div><div class="kpi-val" style="color:${incomplete.length>0?'#d92d20':'#079455'}">${d.lists-d.lists100}</div><div class="kpi-ft"><span class="dot" style="background:${incomplete.length>0?'#d92d20':'#079455'}"></span>${incomplete.length>0?'Needs attention':'All lists complete'}</div></div>
+    </div>
+    <div class="sl">Daily Performance</div>
+    <div class="dept-daily-grid">${dailyBoxes}</div>
+    <div class="sl">Checklists</div>
+    <div class="cards-grid">${listCards}</div>`;
+  deptViews.appendChild(view);
+});
+
+// ────────────────────────────────────────────
+// CHECKLISTS PAGE
+// ────────────────────────────────────────────
+const clT=checklistData.reduce((s,c)=>s+c.total,0),clC=checklistData.reduce((s,c)=>s+c.complete,0);
+document.getElementById('clKpiRow').innerHTML=[
+  {l:'Total Checklists',v:checklistData.length,s:'',dot:'#667085',ft:'Across all departments'},
+  {l:'Perfect Checklists',v:checklistData.filter(c=>c.pct===100).length,s:'/'+checklistData.length,dot:'#079455',ft:'100% all week'},
+  {l:'Avg Completion',v:Math.round(clC/clT*100)+'%',s:'',dot:'#1d4ed8',ft:`${clC} of ${clT} tasks`}
+].map(k=>`<div class="kpi"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}<span class="kpi-sub">${k.s}</span></div><div class="kpi-ft"><span class="dot" style="background:${k.dot}"></span>${k.ft}</div></div>`).join('');
+
+function buildCLTable(filter){
+  const rows=checklistData.filter(c=>filter==='all'||c.dept===filter).sort((a,b)=>a.pct-b.pct);
+  const thead=`<thead><tr><th>Checklist</th><th>Dept</th>${DAYS.map(d=>`<th style="text-align:center">${DAY_SHORT[d]}</th>`).join('')}<th>Week %</th><th>Tasks</th></tr></thead>`;
+  const tbody='<tbody>'+rows.map(cl=>{
+    const dots=DAYS.map(d=>{const bd=cl.byDay[d];if(!bd)return`<td style="text-align:center"><div class="wd na" style="margin:auto">—</div></td>`;const hit=bd.c===bd.t;return`<td style="text-align:center"><div class="wd ${hit?'hit':'miss'}" style="margin:auto">${hit?'✓':'✗'}</div></td>`}).join('');
+    return`<tr><td><div style="font-size:13px;font-weight:600;color:var(--text)">${cl.name}</div></td><td><span class="pill ${cl.dept}">${DM[cl.dept].label}</span></td>${dots}<td><div style="display:flex;align-items:center;gap:8px"><div class="bar-sm"><div class="bar-sm-fill" style="width:${cl.pct}%;background:${cl.pct===100?'#079455':cl.pct===0?'#d92d20':'#f79009'}"></div></div><span class="badge ${pc(cl.pct)}">${cl.pct}%</span></div></td><td><span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--muted)">${cl.complete}/${cl.total}</span></td></tr>`;
+  }).join('')+'</tbody>';
+  document.getElementById('clTable').innerHTML=thead+tbody;
 }
+buildCLTable('all');
 
-function longDate(iso) {
-  const [y,m,d] = iso.split('-');
-  return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+ +d+', '+y;
+let activeClFilter='all';
+function filterCL(f){
+  activeClFilter=f;
+  ['all','foh','boh','mgmt'].forEach(x=>document.getElementById('clf-'+x).style.opacity=x===f?'1':'0.45');
+  buildCLTable(f);
 }
+filterCL('all');
 
-function categorize(tl) {
-  const s = (tl||'').toUpperCase();
-  if (s.includes('BOH')) return 'BOH';
-  if (['SERVER','HOST','BAR','FOH'].some(k=>s.includes(k))) return 'FOH';
-  return null;
-}
+// ────────────────────────────────────────────
+// EMPLOYEES PAGE
+// ────────────────────────────────────────────
+document.getElementById('empKpiRow').innerHTML=[
+  {l:'Staff Active',v:empData.length,s:'',dot:'#667085',ft:'Completed tasks this week'},
+  {l:'Top Contributor',v:'Topher B.',s:'',dot:DM.foh.color,ft:'162 tasks · FOH'},
+  {l:'Total Tasks Done',v:empData.reduce((s,e)=>s+e.tasks,0).toLocaleString(),s:'',dot:'#1d4ed8',ft:'Across all staff'},
+  {l:'Avg Tasks/Person',v:Math.round(empData.reduce((s,e)=>s+e.tasks,0)/empData.length),s:'',dot:'#027a48',ft:'Per active employee'}
+].map(k=>`<div class="kpi"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}<span class="kpi-sub">${k.s}</span></div><div class="kpi-ft"><span class="dot" style="background:${k.dot}"></span>${k.ft}</div></div>`).join('');
 
-function parseCSV(text) {
-  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
-  const headers = splitLine(lines[0]);
-  return lines.slice(1).filter(l=>l.trim()).map(l=>{
-    const vals = splitLine(l), row = {};
-    headers.forEach((h,i)=>row[h.trim()]=(vals[i]||'').trim());
-    return row;
-  });
-}
+// Employee chart
+new Chart(document.getElementById('empChart'),{
+  type:'bar',
+  data:{
+    labels:empData.map(e=>e.name.split(' ')[0]),
+    datasets:[
+      {label:'FOH',data:empData.map(e=>e.foh),backgroundColor:DM.foh.bg,borderColor:DM.foh.bar,borderWidth:1.5,borderRadius:3,borderSkipped:false,stack:'s'},
+      {label:'BOH',data:empData.map(e=>e.boh),backgroundColor:DM.boh.bg,borderColor:DM.boh.bar,borderWidth:1.5,borderRadius:3,borderSkipped:false,stack:'s'},
+      {label:'Mgmt',data:empData.map(e=>e.mgmt),backgroundColor:DM.mgmt.bg,borderColor:DM.mgmt.bar,borderWidth:1.5,borderRadius:3,borderSkipped:false,stack:'s'}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Geist Mono',size:11},color:'#667085',boxWidth:10,boxHeight:10}},tooltip:{backgroundColor:'#101828',titleColor:'#f9fafb',bodyColor:'#d0d5dd',borderColor:'#1d2939',borderWidth:1,padding:10,cornerRadius:8}},
+    scales:{x:{stacked:true,grid:{display:false},border:{display:false},ticks:{color:'#667085',font:{family:'Geist Mono',size:10},maxRotation:45}},y:{stacked:true,grid:{color:'#f2f4f7'},border:{display:false},ticks:{color:'#98a2b3',font:{family:'Geist Mono',size:11}}}}}
+});
 
-function splitLine(line) {
-  const out=[]; let cur='', inQ=false;
-  for (const c of line) {
-    if (c==='"') inQ=!inQ;
-    else if (c===',' && !inQ) { out.push(cur); cur=''; }
-    else cur+=c;
-  }
-  out.push(cur); return out;
-}
-
-let chartInst = null;
-
-function processData(rows) {
-  const req = ['Task List','Status','Start Date'];
-  const cols = Object.keys(rows[0]||{});
-  for (const r of req) if (!cols.includes(r)) { showErr(`Missing column: "${r}"`); return; }
-
-  const dates = rows.map(r=>r['Start Date']).filter(Boolean).sort();
-  const minD = dates[0], maxD = dates[dates.length-1];
-
-  const totals = { FOH:{c:0,t:0}, BOH:{c:0,t:0} };
-  const byDate = {};
-  const byList = { FOH:{}, BOH:{} };
-
-  for (const row of rows) {
-    const c = categorize(row['Task List']);
-    if (!c) continue;
-    const done = +row['Status']===1 ? 1 : 0;
-    const d = row['Start Date']||'';
-    totals[c].c += done; totals[c].t++;
-    if (!byDate[d]) byDate[d]={ FOH:{c:0,t:0}, BOH:{c:0,t:0} };
-    byDate[d][c].c += done; byDate[d][c].t++;
-    const ln = row['Task List'];
-    if (!byList[c][ln]) byList[c][ln]={c:0,t:0};
-    byList[c][ln].c += done; byList[c][ln].t++;
-  }
-
-  const fPct = totals.FOH.t ? totals.FOH.c/totals.FOH.t*100 : 0;
-  const bPct = totals.BOH.t ? totals.BOH.c/totals.BOH.t*100 : 0;
-  const tC = totals.FOH.c + totals.BOH.c;
-  const tT = totals.FOH.t + totals.BOH.t;
-  const oPct = tT ? tC/tT*100 : 0;
-
-  $('rpt-period').textContent = minD===maxD ? longDate(minD) : `${longDate(minD)} – ${longDate(maxD)}`;
-  $('foh-val').textContent = fmt1(fPct);
-  $('foh-sub').textContent = `${totals.FOH.c} of ${totals.FOH.t} tasks completed`;
-  $('boh-val').textContent = fmt1(bPct);
-  $('boh-sub').textContent = `${totals.BOH.c} of ${totals.BOH.t} tasks completed`;
-  $('ov-val').textContent  = fmt1(oPct);
-  $('ov-sub').textContent  = `${tC} of ${tT} tasks completed`;
-
-  const sortedDates = Object.keys(byDate).sort();
-  const anomalies = [];
-  for (const d of sortedDates) {
-    const {FOH:f,BOH:b} = byDate[d];
-    const fp = f.t ? f.c/f.t*100 : null;
-    const bp = b.t ? b.c/b.t*100 : null;
-    if (fp!==null && fp<50) anomalies.push({d,side:'FOH',pct:fp,c:f.c,t:f.t});
-    if (bp!==null && bp<50) anomalies.push({d,side:'BOH',pct:bp,c:b.c,t:b.t});
-  }
-
-  const alertsEl = $('alerts');
-  alertsEl.innerHTML = '';
-  if (!anomalies.length) {
-    alertsEl.innerHTML = `<div class="alert ok">
-      <div class="alert-stripe"></div>
-      <span class="alert-icon">✓</span>
-      <span class="alert-body">All clear — no anomaly days detected. Both teams maintained strong completion rates throughout the reporting period.</span>
-    </div>`;
-  } else {
-    anomalies.forEach(a => {
-      const cls = a.pct===0 ? 'danger' : 'warn';
-      const icon = cls === 'danger' ? '✕' : '⚠';
-      alertsEl.innerHTML += `<div class="alert ${cls}">
-        <div class="alert-stripe"></div>
-        <span class="alert-icon">${icon}</span>
-        <span class="alert-body"><strong>${shortDate(a.d)} · ${a.side} · ${a.pct.toFixed(0)}% completion</strong> — ${a.c} of ${a.t} tasks recorded as complete. Recommend reviewing staffing records and checklist logs for this date.</span>
-      </div>`;
-    });
-  }
-
-  const tbody = $('tbl-body');
-  tbody.innerHTML = '';
-  for (const d of sortedDates) {
-    const {FOH:f,BOH:b} = byDate[d];
-    const fp = f.t ? f.c/f.t*100 : null;
-    const bp = b.t ? b.c/b.t*100 : null;
-    const fc = fp!==null ? pctColor(fp) : '#3a3a3a';
-    const bc = bp!==null ? pctColor(bp) : '#3a3a3a';
-    tbody.innerHTML += `<tr>
-      <td class="date-cell">${shortDate(d)}</td>
-      <td><div class="bar-row">
-        <div class="bar-bg"><div class="bar-fill" style="width:${fp??0}%;background:${fc}"></div></div>
-        <span class="bar-pct" style="color:${fc}">${fp!==null?fmt1(fp):'—'}</span>
-        <span class="bar-ct">${f.t?f.c+'/'+f.t:''}</span>
-      </div></td>
-      <td><div class="bar-row">
-        <div class="bar-bg"><div class="bar-fill" style="width:${bp??0}%;background:${bc}"></div></div>
-        <span class="bar-pct" style="color:${bc}">${bp!==null?fmt1(bp):'—'}</span>
-        <span class="bar-ct">${b.t?b.c+'/'+b.t:''}</span>
-      </div></td>
+// Employee table
+document.getElementById('empTable').innerHTML=`
+  <thead><tr><th>#</th><th>Employee</th><th>Dept</th><th>Tasks</th><th>Lists</th><th>Days</th><th>Breakdown</th></tr></thead>
+  <tbody>${empData.map((e,i)=>{
+    const d=e.foh>0&&e.boh===0&&e.mgmt===0?'foh':e.boh>0&&e.foh===0&&e.mgmt===0?'boh':e.mgmt>e.foh&&e.mgmt>e.boh?'mgmt':'foh';
+    const tot=e.foh+e.boh+e.mgmt;
+    const fP=tot>0?e.foh/tot*100:0,bP=tot>0?e.boh/tot*100:0,mP=tot>0?e.mgmt/tot*100:0;
+    return`<tr>
+      <td><span class="rank-num">${i+1}</span></td>
+      <td><div class="emp-name-wrap"><div class="emp-avatar" style="background:${avatarColor(e.name)}">${initials(e.name)}</div><span class="emp-name">${e.name}</span></div></td>
+      <td><span class="pill ${d}">${DM[d].label}</span></td>
+      <td><span style="font-family:'Geist Mono',monospace;font-size:13px;font-weight:600">${e.tasks}</span></td>
+      <td><span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--muted)">${e.lists}</span></td>
+      <td><span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--muted)">${e.days}</span></td>
+      <td><div class="dept-bar-row">${fP>0?`<div class="db-seg" style="width:${fP}%;background:rgba(105,65,198,0.5)" title="FOH: ${e.foh}"></div>`:''}${bP>0?`<div class="db-seg" style="width:${bP}%;background:rgba(196,50,10,0.5)" title="BOH: ${e.boh}"></div>`:''}${mP>0?`<div class="db-seg" style="width:${mP}%;background:rgba(2,122,72,0.5)" title="Mgmt: ${e.mgmt}"></div>`:''}</div></td>
     </tr>`;
-  }
-
-  const listsGrid = $('lists-grid');
-  listsGrid.innerHTML = '';
-  for (const cat of ['FOH','BOH']) {
-    const entries = Object.entries(byList[cat]).sort((a,b)=>(a[1].c/a[1].t)-(b[1].c/b[1].t));
-    const rowsHTML = entries.map(([name,s])=>{
-      const p = s.t ? s.c/s.t*100 : 0;
-      const co = pctColor(p);
-      return `<div class="tl-row">
-        <span class="tl-name" title="${name}">${name}</span>
-        <div class="tl-bar-bg"><div class="tl-bar-fill" style="width:${Math.max(p,2)}%;background:${co}"></div></div>
-        <span class="tl-pct" style="color:${co}">${p.toFixed(0)}%</span>
-      </div>`;
-    }).join('');
-    const label = cat === 'FOH' ? 'Front of House' : 'Back of House';
-    listsGrid.innerHTML += `<div class="list-panel">
-      <div class="list-panel-head ${cat.toLowerCase()}">${label} — Task Lists</div>
-      ${rowsHTML||'<div style="font-size:12px;color:#666">No data available</div>'}
-    </div>`;
-  }
-
-  if (chartInst) { chartInst.destroy(); chartInst = null; }
-  const labels  = sortedDates.map(shortDate);
-  const fohData = sortedDates.map(d=>byDate[d].FOH.t?+(byDate[d].FOH.c/byDate[d].FOH.t*100).toFixed(1):null);
-  const bohData = sortedDates.map(d=>byDate[d].BOH.t?+(byDate[d].BOH.c/byDate[d].BOH.t*100).toFixed(1):null);
-
-  chartInst = new Chart($('chart'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label:'FOH', data:fohData, borderColor:'#f5e014', backgroundColor:'rgba(245,224,20,0.06)', tension:0.3, fill:true, pointRadius:3, pointHoverRadius:5, pointBackgroundColor:'#f5e014', borderWidth:1.5, spanGaps:true },
-        { label:'BOH', data:bohData, borderColor:'#c9b800', backgroundColor:'rgba(201,184,0,0.06)', tension:0.3, fill:true, pointRadius:3, pointHoverRadius:5, pointBackgroundColor:'#c9b800', borderWidth:1.5, spanGaps:true }
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins: {
-        legend:{ display:false },
-        tooltip:{
-          backgroundColor:'#1a1a1a',
-          borderColor:'#2a2a2a', borderWidth:1,
-          titleColor:'#666', bodyColor:'#d4d4d4',
-          titleFont:{ family:'IBM Plex Mono', size:10 },
-          bodyFont:{ family:'IBM Plex Mono', size:11 },
-          padding:12,
-          callbacks:{ label: ctx=>` ${ctx.dataset.label}  ${ctx.parsed.y?.toFixed(1)}%` }
-        }
-      },
-      scales:{
-        y:{ min:0, max:105,
-          ticks:{callback:v=>v+'%', color:'#444', stepSize:25, font:{family:'IBM Plex Mono',size:10}},
-          grid:{color:'#1a1a1a'}, border:{display:false}
-        },
-        x:{ ticks:{color:'#444', maxRotation:0, font:{family:'IBM Plex Mono',size:10}},
-          grid:{display:false}, border:{display:false}
-        }
-      }
-    }
-  });
-
-  const now = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  $('rpt-footer').textContent = `Report generated ${now}  ·  ${rows.length} total task records processed`;
-
-  $('upload-screen').style.display = 'none';
-  $('report-screen').style.display = 'block';
-}
-
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',(i===0)===(name==='daily')));
-  $('panel-daily').classList.toggle('active',name==='daily');
-  $('panel-lists').classList.toggle('active',name==='lists');
-}
-
-function resetTool() {
-  $('upload-screen').style.display = 'flex';
-  $('report-screen').style.display = 'none';
-  $('file-input').value = '';
-  hideErr();
-}
-
-function showErr(msg) { const e=$('error-msg'); e.textContent='⚠ '+msg; e.style.display='block'; }
-function hideErr()    { $('error-msg').style.display='none'; }
-
-function handleFile(file) {
-  if (!file||!file.name.endsWith('.csv')) { showErr('Please upload a .csv file.'); return; }
-  hideErr();
-  const r = new FileReader();
-  r.onload = e => {
-    try {
-      const rows = parseCSV(e.target.result);
-      if (!rows.length) { showErr('CSV appears empty.'); return; }
-      processData(rows);
-    } catch(err) { showErr('Could not parse CSV: '+err.message); }
-  };
-  r.readAsText(file);
-}
-
-$('file-input').addEventListener('change', e=>handleFile(e.target.files[0]));
-
-const zone = $('drop-zone');
-zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('over'); });
-zone.addEventListener('dragleave', ()=>zone.classList.remove('over'));
-zone.addEventListener('drop', e=>{ e.preventDefault(); zone.classList.remove('over'); handleFile(e.dataTransfer.files[0]); });
-
-if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js')); }
+  }).join('')}</tbody>`;
 </script>
+</div>
+<nav class="mobile-nav"><a class="mobile-nav-btn " href="index.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a><a class="mobile-nav-btn " href="labor.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Labor</a><a class="mobile-nav-btn " href="sales.html"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Sales</a><a class="mobile-nav-btn " href="inventory.html"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Inventory</a><a class="mobile-nav-btn " href="coverage.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Coverage</a></nav>
 </body>
 </html>
