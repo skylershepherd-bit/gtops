@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#ffffff">
-<title>GT Ops — Inventory Count</title>
+<title>GT Ops — Inventory</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 
@@ -87,46 +87,57 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
   .mobile-nav-btn.active{color:var(--accent-dark)}
 }
 
-.toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:var(--topnav-h);z-index:90}
+/* TABS */
+.inv-tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;display:flex;gap:0;position:sticky;top:var(--topnav-h);z-index:95}
+.inv-tab{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:13px 18px;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;border:none;background:transparent}
+.inv-tab:hover{color:var(--text)}.inv-tab.active{color:var(--accent-dark);border-bottom-color:var(--accent)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+/* TOOLBAR */
+.toolbar{background:var(--surface2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:calc(var(--topnav-h) + 42px);z-index:90}
 .search-wrap{flex:1;position:relative}
 .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
-.search-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px 8px 32px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none}
-.search-input::placeholder{color:var(--muted)}
-.search-input:focus{border-color:var(--accent);background:var(--surface)}
-.filter-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .15s}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px 7px 32px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none}
+.search-input:focus{border-color:var(--accent)}
+.filter-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 12px;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .15s}
 .filter-btn.active{background:var(--red-bg);border-color:var(--red-bd);color:var(--red)}
-.stats-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:20px}
-.stat{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--muted)}
-.stat-dot{width:6px;height:6px;border-radius:50%}
+/* STATS */
+.stats-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:7px 16px;display:flex;gap:18px}
+.stat{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.stat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .stat-num{color:var(--text);font-weight:600}
-.section-hdr{background:var(--surface2);padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .1s}
+/* SECTIONS */
+.section-hdr{background:var(--surface2);padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
 .section-hdr:hover{background:var(--border)}
 .section-title{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-dark);font-weight:600}
-.section-count{font-family:var(--mono);font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.section-count{font-family:var(--mono);font-size:10px;color:var(--muted);display:flex;align-items:center;gap:5px}
 .sec-chevron{font-size:10px;color:var(--muted);transition:transform .2s}
 .section-hdr.collapsed .sec-chevron{transform:rotate(-90deg)}
 .section-items.collapsed{display:none}
-.item-row{display:flex;align-items:center;padding:11px 16px;border-bottom:1px solid var(--border);gap:12px;transition:background .1s;background:var(--surface)}
+/* ITEMS */
+.item-row{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);gap:12px;background:var(--surface)}
 .item-row:hover{background:var(--surface2)}
-.item-row.low{border-left:3px solid var(--red)}
-.item-row.ok{border-left:3px solid transparent}
+.item-row.low{border-left:3px solid var(--red)}.item-row.ok{border-left:3px solid transparent}
 .item-info{flex:1;min-width:0}
 .item-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item-meta{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
 .item-par.low{color:var(--red)}.item-par.ok{color:var(--green)}
-.count-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.count-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:28px;height:28px;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .1s;flex-shrink:0}
-.count-btn:hover{background:var(--border);color:var(--text)}
-.count-input{width:56px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 6px;color:var(--text);font-family:var(--mono);font-size:14px;font-weight:600;text-align:center;outline:none;appearance:textfield}
+/* BAR DUAL COUNTS */
+.dual-count{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.count-label{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:3px}
+/* COUNT INPUTS */
+.count-wrap{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.count-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:26px;height:26px;border-radius:5px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .1s;flex-shrink:0}
+.count-btn:hover{background:var(--border)}
+.count-input{width:50px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 5px;color:var(--text);font-family:var(--mono);font-size:13px;font-weight:600;text-align:center;outline:none;appearance:textfield}
 .count-input::-webkit-inner-spin-button,.count-input::-webkit-outer-spin-button{appearance:none}
 .count-input:focus{border-color:var(--accent)}
-.count-input.low{border-color:var(--red-bd);color:var(--red)}
-.count-input.ok{border-color:var(--green-bd)}
-.sync-btn{background:var(--accent);color:#000;border:none;border-radius:6px;padding:6px 14px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:opacity .15s}
-.sync-btn:hover{opacity:.85}.sync-btn:disabled{opacity:.4;cursor:default}
+.count-input.low{border-color:var(--red-bd);color:var(--red)}.count-input.ok{border-color:var(--green-bd)}
+/* SYNC BTN */
+.sync-btn{background:var(--accent);color:#000;border:none;border-radius:6px;padding:6px 14px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .15s}
+.sync-btn:hover{background:var(--accent-dark)}.sync-btn:disabled{opacity:.4;cursor:default}
 .sync-btn.syncing{background:var(--surface2);color:var(--muted)}
-.sync-btn.success{background:var(--green);color:#fff}
-.sync-btn.error{background:var(--red);color:#fff}
+.sync-btn.success{background:var(--green);color:#fff}.sync-btn.error{background:var(--red);color:#fff}
+/* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(16,24,40,.5);align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 24px;width:100%;max-width:400px;box-shadow:var(--shadow)}
@@ -135,9 +146,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 .modal-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:8px;padding:12px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer}
 .modal-cancel{display:block;text-align:center;margin-top:12px;color:var(--muted);font-size:13px;cursor:pointer}
 .modal-cancel:hover{color:var(--text)}
+/* TOAST */
 .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;border-radius:8px;padding:10px 20px;font-family:var(--mono);font-size:12px;z-index:400;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}.toast.green{background:var(--green)}.toast.red{background:var(--red)}
-.empty{padding:48px 16px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px}
+.empty{padding:40px 16px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px}
 </style>
 </head>
 <body>
@@ -148,12 +160,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
     <div class="topbar-logo"><div class="topbar-logo-mark"><svg viewBox="0 0 28 28" width="20" height="20"><text x="14" y="20" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" fill="#000">GT</text></svg></div></div>
     <span class="topbar-name">Game Theory</span>
     <span class="topbar-sep">/</span>
-    <span class="topbar-page">Inventory Count</span>
+    <span class="topbar-page">Inventory</span>
   </div>
   <div class="topbar-right"><button class="sync-btn" id="sync-btn" onclick="startSync()">Sync to Sheet</button></div>
 </header>
+
+  <!-- TABS -->
+  <div class="inv-tabs">
+    <button class="inv-tab active" id="tab-food" onclick="switchTab('food')">Food</button>
+    <button class="inv-tab" id="tab-bar" onclick="switchTab('bar')">Bar</button>
+    <button class="inv-tab" id="tab-supply" onclick="switchTab('supply')">Supply Order</button>
+  </div>
+
+  <!-- TOOLBAR (shared) -->
   <div class="toolbar">
-    <div class="search-wrap"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="search-input" id="search" type="text" placeholder="Search items..." oninput="renderList()"></div>
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="search" type="text" placeholder="Search items..." oninput="renderActive()">
+    </div>
     <button class="filter-btn" id="filter-low" onclick="toggleFilter()">Low only</button>
   </div>
   <div class="stats-bar">
@@ -161,19 +185,49 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
     <div class="stat"><div class="stat-dot" style="background:var(--red)"></div><span id="stat-low" class="stat-num">0</span>&nbsp;below par</div>
     <div class="stat"><div class="stat-dot" style="background:var(--green)"></div><span id="stat-counted" class="stat-num">0</span>&nbsp;counted</div>
   </div>
-  <div id="list"></div>
+
+  <!-- FOOD TAB -->
+  <div class="tab-panel active" id="panel-food">
+    <div id="food-list"></div>
+  </div>
+
+  <!-- BAR TAB -->
+  <div class="tab-panel" id="panel-bar">
+    <div id="bar-list"></div>
+  </div>
+
+  <!-- SUPPLY TAB -->
+  <div class="tab-panel" id="panel-supply">
+    <div id="supply-list"></div>
+  </div>
+
   <div class="page-footer" style="padding:14px 16px"><span class="footer-text" id="footer-date"></span><span class="footer-text">Game Theory · Inventory</span></div>
 </div>
+
+<!-- AUTH MODAL -->
 <div class="modal-overlay" id="auth-modal">
-  <div class="modal"><div class="modal-title">Sign in to sync</div><div class="modal-sub">You'll be asked to sign in with Google to allow GT Ops to write counts to your inventory sheet.</div><button class="modal-btn" onclick="doAuth()">Sign in with Google</button><span class="modal-cancel" onclick="closeModal()">Cancel</span></div>
+  <div class="modal">
+    <div class="modal-title">Sign in to sync</div>
+    <div class="modal-sub">Sign in with Google to write counts to your inventory sheet.</div>
+    <button class="modal-btn" onclick="doAuth()">Sign in with Google</button>
+    <span class="modal-cancel" onclick="closeModal()">Cancel</span>
+  </div>
 </div>
+
 <nav class="mobile-nav"><a class="mobile-nav-btn " href="index.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a><a class="mobile-nav-btn " href="labor.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Labor</a><a class="mobile-nav-btn " href="sales.html"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Sales</a><a class="mobile-nav-btn active" href="inventory.html"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Inventory</a><a class="mobile-nav-btn " href="coverage.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Coverage</a></nav>
 <div class="toast" id="toast"></div>
+
 <script>
-const SHEET_ID='1dTFq7bt7VaROu-eNXL3ie5J-p2wWJqSy3DdN8zg-yDE';
-const SHEET_TAB='Countsheet';
-const CLIENT_ID='913629678796-thcapfaqb3sluu4sjgkgtc2fa5m2lvab.apps.googleusercontent.com';
-const SCOPES='https://www.googleapis.com/auth/spreadsheets';
+// ── CONFIG ──────────────────────────────────────────────────────
+const CLIENT_ID = '913629678796-thcapfaqb3sluu4sjgkgtc2fa5m2lvab.apps.googleusercontent.com';
+const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets';
+const SHEETS = {
+  food:   { id:'1dTFq7bt7VaROu-eNXL3ie5J-p2wWJqSy3DdN8zg-yDE', tab:'Countsheet' },
+  bar:    { id:'1a5UOb-vOpBkqFFDSeujt6w4EsbLA2z1Cv8MhXojPw7w',  tab:'Sheet1' },
+  supply: { id:'1z1WhqCZusWFd8lOkqnJnEtU-tBye-_mX0IM8iaX5nH8',  tab:'Sheet1' },
+};
+
+// ── FOOD ITEMS ──────────────────────────────────────────────────
 const ITEMS = [
   {row:3, section:'TOP SHELF', item:'Whole Milk', uom:'Gallons', par:4.0},
   {row:4, section:'TOP SHELF', item:'Half + Half', uom:'1Qt', par:12.0},
@@ -334,29 +388,391 @@ const ITEMS = [
   {row:176, section:'Bar Liquor Shelf', item:'Bitter Orange Juice', uom:'bottle', par:3.0},
   {row:177, section:'Bar Liquor Shelf', item:'bloody mary mix (zing zang)', uom:'container (32oz)', par:3.0},
 ];
-const counts={};const collapsedSections=new Set();let filterLow=false,tokenClient=null,accessToken=null;
-function loadGIS(){if(!CLIENT_ID||CLIENT_ID.includes('PASTE'))return;const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.onload=()=>{tokenClient=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,callback:(r)=>{if(r.error){showToast('Auth failed: '+r.error,'red');return;}accessToken=r.access_token;pushToSheets();}});}; document.head.appendChild(s);}
-function getCount(row){return counts[row]!==undefined?counts[row]:'';}
-function setCount(row,val){const n=parseFloat(val);counts[row]=isNaN(n)?'':n;updateStats();updateRowStyle(row);}
-function stepCount(row,delta){const cur=getCount(row);const n=(cur===''?0:parseFloat(cur))+delta;const r=Math.round(n*4)/4;counts[row]=Math.max(0,r);const inp=document.getElementById('c-'+row);if(inp)inp.value=counts[row];updateStats();updateRowStyle(row);}
-function updateRowStyle(row){const item=ITEMS.find(i=>i.row===row);if(!item)return;const inp=document.getElementById('c-'+row);const rowEl=document.getElementById('r-'+row);if(!inp||!rowEl)return;const val=getCount(row);const isLow=val!==''&&parseFloat(val)<item.par;inp.className='count-input'+(isLow?' low':val!==''?' ok':'');rowEl.className='item-row'+(isLow?' low':' ok');}
-function updateStats(){const counted=ITEMS.filter(i=>getCount(i.row)!=='').length;const low=ITEMS.filter(i=>{const v=getCount(i.row);return v!==''&&parseFloat(v)<i.par;}).length;document.getElementById('stat-total').textContent=ITEMS.length;document.getElementById('stat-counted').textContent=counted;document.getElementById('stat-low').textContent=low;}
-function toggleFilter(){filterLow=!filterLow;document.getElementById('filter-low').classList.toggle('active',filterLow);renderList();}
-function toggleSection(secId){if(collapsedSections.has(secId)){collapsedSections.delete(secId);}else{collapsedSections.add(secId);}renderList();}
-function renderList(){const q=(document.getElementById('search').value||'').toLowerCase();const list=document.getElementById('list');const sections=[...new Set(ITEMS.map(i=>i.section))];let html='';
-sections.forEach(section=>{let items=ITEMS.filter(i=>i.section===section);if(q)items=items.filter(i=>i.item.toLowerCase().includes(q)||i.uom.toLowerCase().includes(q));if(filterLow)items=items.filter(i=>{const v=getCount(i.row);return v!==''&&parseFloat(v)<i.par;});if(!items.length)return;
-const secId=section.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');const isCollapsed=collapsedSections.has(secId);
-html+=`<div class="section-hdr${isCollapsed?' collapsed':''}" onclick="toggleSection('${secId}')"><span class="section-title">${section}</span><span class="section-count">${items.length} items<span class="sec-chevron">▼</span></span></div>`;
-html+=`<div class="section-items${isCollapsed?' collapsed':''}" id="sec-${secId}">`;
-items.forEach(i=>{const val=getCount(i.row);const isLow=val!==''&&parseFloat(val)<i.par;const parTxt=i.par>0?`par: ${i.par}`:'';html+=`<div class="item-row${isLow?' low':' ok'}" id="r-${i.row}"><div class="item-info"><div class="item-name">${i.item}</div><div class="item-meta">${i.uom}${parTxt?` &nbsp;·&nbsp; <span class="item-par${isLow?' low':val!==''?' ok':''}">${parTxt}</span>`:''}</div></div><div class="count-wrap"><button class="count-btn" onclick="stepCount(${i.row},-0.25)">−</button><input class="count-input${isLow?' low':val!==''?' ok':''}" id="c-${i.row}" type="number" min="0" step="0.25" value="${val}" placeholder="—" oninput="setCount(${i.row},this.value)"><button class="count-btn" onclick="stepCount(${i.row},0.25)">+</button></div></div>`;});
-html+='</div>';});
-if(!html)html='<div class="empty">No items match your search.</div>';list.innerHTML=html;}
-function startSync(){const counted=ITEMS.filter(i=>getCount(i.row)!=='').length;if(!counted){showToast('No counts to sync yet','red');return;}if(!CLIENT_ID||CLIENT_ID.includes('PASTE')){showToast('Client ID not configured','red');return;}document.getElementById('auth-modal').classList.add('open');}
-function closeModal(){document.getElementById('auth-modal').classList.remove('open');}
-function doAuth(){closeModal();if(!tokenClient){showToast('Google auth not loaded','red');return;}if(accessToken){pushToSheets();return;}tokenClient.requestAccessToken();}
-async function pushToSheets(){const btn=document.getElementById('sync-btn');btn.textContent='Syncing...';btn.disabled=true;btn.className='sync-btn syncing';const data=ITEMS.filter(i=>getCount(i.row)!=='').map(i=>{return{range:`${SHEET_TAB}!D${i.row}`,values:[[getCount(i.row)]]}});try{const resp=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({valueInputOption:'USER_ENTERED',data})});if(!resp.ok){const err=await resp.json();throw new Error(err.error?.message||resp.statusText);}btn.textContent='Synced ✓';btn.className='sync-btn success';showToast(`${data.length} counts synced`,'green');setTimeout(()=>{btn.textContent='Sync to Sheet';btn.disabled=false;btn.className='sync-btn';},3000);}catch(e){btn.textContent='Sync Failed';btn.className='sync-btn error';btn.disabled=false;showToast('Sync failed: '+e.message,'red');accessToken=null;setTimeout(()=>{btn.textContent='Sync to Sheet';btn.className='sync-btn';},3000);}}
-function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');clearTimeout(t._timer);t._timer=setTimeout(()=>t.className='toast',3000);}
-document.addEventListener('DOMContentLoaded',()=>{document.getElementById('footer-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).toUpperCase();updateStats();renderList();loadGIS();});
+
+// ── BAR ITEMS ───────────────────────────────────────────────────
+const BAR_ITEMS = [
+  {row:2, section:'Liquor — Well', item:'Triple Sec', par:2.0},
+  {row:3, section:'Liquor — Well', item:'Aperol', par:2.0},
+  {row:4, section:'Liquor — Well', item:'Sobieski Vodka', par:6.0},
+  {row:5, section:'Liquor — Well', item:'Exotico Tequila', par:12.0},
+  {row:6, section:'Liquor — Well', item:'Gordon's Gin', par:2.0},
+  {row:7, section:'Liquor — Well', item:'Benchmark Bourbon', par:4.0},
+  {row:8, section:'Liquor — Well', item:'Jim Beam Peach', par:2.5},
+  {row:9, section:'Liquor — Well', item:'Old Overholt', par:2.5},
+  {row:10, section:'Liquor — Well', item:'Blue Chair Coconut Rum', par:5.5},
+  {row:11, section:'Liquor — Well', item:'Plantation 3 Star Rum', par:1.0},
+  {row:12, section:'Liquor — Well', item:'Plantation Original Dark', par:1.0},
+  {row:13, section:'Liquor — Well', item:'Tito's Vodka', par:2.0},
+  {row:14, section:'Liquor — Well', item:'Three Olives Rosé Vodka', par:1.0},
+  {row:15, section:'Liquor — Well', item:'Deep Eddy Peach', par:1.0},
+  {row:16, section:'Liquor — Well', item:'Deep Eddy Ruby Red', par:1.0},
+  {row:17, section:'Liquor — Well', item:'Western Son's Blueberry Vodka', par:5.0},
+  {row:18, section:'Liquor — Well', item:'St. Germain', par:0.5},
+  {row:19, section:'Liquor — Well', item:'Midori', par:1.0},
+  {row:20, section:'Liquor — Well', item:'Amaretto', par:0.5},
+  {row:21, section:'Liquor — Well', item:'Apple Jack Brandy', par:3.0},
+  {row:22, section:'Liquor — Well', item:'Orange Curacao', par:0.25},
+  {row:23, section:'Liquor — Well', item:'Buttershot Schnapps', par:0.25},
+  {row:24, section:'Liquor — Well', item:'Peach Schnapps', par:1.0},
+  {row:25, section:'Liquor — Well', item:'Razzmatazz', par:1.0},
+  {row:26, section:'Liquor — Well', item:'Sour Apple Pucker', par:3.0},
+  {row:27, section:'Liquor — Well', item:'Blue Curacao', par:3.0},
+  {row:28, section:'Liquor — Well', item:'Elderflower', par:3.0},
+  {row:29, section:'Liquor — Well', item:'Cointreau', par:0.25},
+  {row:30, section:'Liquor — Well', item:'Grand Marnier', par:0.25},
+  {row:31, section:'Liquor — Well', item:'Chambord', par:0.25},
+  {row:32, section:'Liquor — Well', item:'Giffard Orgeat', par:3.0},
+  {row:33, section:'Liquor — Well', item:'Bailey's Irish Cream', par:1.0},
+  {row:34, section:'Liquor — Well', item:'Kahlua', par:0.25},
+  {row:35, section:'Liquor — Well', item:'Fireball', par:0.5},
+  {row:36, section:'Liquor — Well', item:'Rumchata', par:0.25},
+  {row:37, section:'Liquor — Well', item:'Sweet Vermouth', par:0.25},
+  {row:38, section:'Liquor — Well', item:'Dry Vermouth', par:0.25},
+  {row:39, section:'Liquor — Well', item:'Tonic Water', par:8.0},
+  {row:40, section:'Liquor — Well', item:'Angostura Bitters', par:2.0},
+  {row:41, section:'Liquor — Well', item:'Orange Bitters', par:2.0},
+  {row:42, section:'Liquor — Well', item:'Zing Zang Bloody Mary Mix', par:1.0},
+  {row:43, section:'Liquor — Well', item:'Grapefruit Juice', par:4.0},
+  {row:44, section:'Liquor — Well', item:'Cranberry Juice', par:1.0},
+  {row:45, section:'Liquor — Well', item:'Pineapple Juice', par:4.0},
+  {row:46, section:'Liquor — Well', item:'Cold Brew', par:1.0},
+  {row:47, section:'Liquor — Call', item:'Dewars White Label', par:0.5},
+  {row:48, section:'Liquor — Call', item:'Crown Royal', par:0.5},
+  {row:49, section:'Liquor — Call', item:'Crown Royal Peach', par:0.5},
+  {row:50, section:'Liquor — Call', item:'Buffalo Trace Bourbon', par:1.0},
+  {row:51, section:'Liquor — Call', item:'Jack Daniels Black', par:0.5},
+  {row:52, section:'Liquor — Call', item:'Jameson', par:1.0},
+  {row:53, section:'Liquor — Call', item:'Skrewball', par:0.5},
+  {row:54, section:'Liquor — Call', item:'Johnnie Walker Black', par:0.5},
+  {row:55, section:'Liquor — Call', item:'Glenlivet 12 Year', par:0.5},
+  {row:56, section:'Liquor — Call', item:'TX Whiskey', par:1.0},
+  {row:57, section:'Liquor — Call', item:'Suntory Toki', par:0.25},
+  {row:58, section:'Liquor — Call', item:'Templeton Rye', par:0.5},
+  {row:59, section:'Liquor — Call', item:'Knob Creek Rye', par:0.5},
+  {row:60, section:'Liquor — Call', item:'Knob Creek Bourbon', par:0.5},
+  {row:61, section:'Liquor — Call', item:'Woodford Reserve Bourbon', par:0.5},
+  {row:62, section:'Liquor — Call', item:'Four Roses', par:0.5},
+  {row:63, section:'Liquor — Call', item:'Maker's Mark 46', par:0.5},
+  {row:64, section:'Liquor — Call', item:'Bombay Sapphire', par:0.5},
+  {row:65, section:'Liquor — Call', item:'Hendricks', par:0.5},
+  {row:66, section:'Liquor — Call', item:'Grey Goose', par:0.5},
+  {row:67, section:'Liquor — Call', item:'Cazadores Blanco', par:0.5},
+  {row:68, section:'Liquor — Call', item:'Cazadores Reposado', par:0.5},
+  {row:69, section:'Liquor — Call', item:'El Silencio Mezcal', par:0.25},
+  {row:70, section:'Liquor — Call', item:'Don Julio Silver', par:1.0},
+  {row:71, section:'Liquor — Call', item:'Patron Silver', par:1.0},
+  {row:72, section:'Liquor — Call', item:'Clase Azul', par:0.25},
+  {row:73, section:'Liquor — Call', item:'Don Julio 1942', par:0.25},
+  {row:74, section:'Beer — Kegs', item:'Rahr's Blonde', par:1.0},
+  {row:75, section:'Beer — Kegs', item:'Half Life Hazy IPA', par:1.0},
+  {row:76, section:'Beer — Kegs', item:'Paleta De Mango', par:2.0},
+  {row:77, section:'Beer — Kegs', item:'Austin Eastcider', par:1.0},
+  {row:78, section:'Beer — Kegs', item:'Rotating Tap', par:1.0},
+  {row:79, section:'Beer — Cans & Bottles', item:'Bud Light', par:12.0},
+  {row:80, section:'Beer — Cans & Bottles', item:'Michelob Ultra', par:12.0},
+  {row:81, section:'Beer — Cans & Bottles', item:'Blood and Honey', par:12.0},
+  {row:82, section:'Beer — Cans & Bottles', item:'CideBoob', par:12.0},
+  {row:83, section:'Beer — Cans & Bottles', item:'Dos XX', par:18.0},
+  {row:84, section:'Beer — Cans & Bottles', item:'Lone Star', par:12.0},
+  {row:85, section:'Beer — Cans & Bottles', item:'Plutonium Coconut', par:7.0},
+  {row:86, section:'Beer — Cans & Bottles', item:'Cannoneer FC', par:12.0},
+  {row:87, section:'Beer — Cans & Bottles', item:'Feisty Blonde FC', par:12.0},
+  {row:88, section:'Beer — Cans & Bottles', item:'Freaky Deaky FC', par:7.0},
+  {row:89, section:'Beer — Cans & Bottles', item:'Great Hall Hefeweizen FC', par:7.0},
+  {row:90, section:'Beer — Cans & Bottles', item:'Noble Crusader IPA FC', par:7.0},
+  {row:91, section:'Beer — Cans & Bottles', item:'Royal Blood Wheat FC', par:7.0},
+  {row:92, section:'Beer — Cans & Bottles', item:'Sucker Punch FC', par:7.0},
+  {row:93, section:'Beer — Cans & Bottles', item:'Reasonably Corrupt FC', par:7.0},
+  {row:94, section:'Beer — Cans & Bottles', item:'Topo Chico Seltzer', par:4.0},
+  {row:95, section:'Wine', item:'Drumheller Cab', par:4.0},
+  {row:96, section:'Wine', item:'Joel Gott Red Blend', par:4.0},
+  {row:97, section:'Wine', item:'Folie Chardonnay', par:4.0},
+  {row:98, section:'Wine', item:'Sand Point Sauv Blanc', par:4.0},
+  {row:99, section:'Wine', item:'Sparkling', par:4.0},
+  {row:100, section:'Bar Supplies', item:'Pineapple Juice (Bar)', par:4.0},
+  {row:101, section:'Bar Supplies', item:'Cranberry Juice (Bar)', par:2.0},
+  {row:102, section:'Bar Supplies', item:'Orange Juice (Bar)', par:2.0},
+  {row:103, section:'Bar Supplies', item:'Grapefruit Juice (Bar)', par:4.0},
+  {row:104, section:'Bar Supplies', item:'Pomegranate Juice', par:1.0},
+  {row:105, section:'Bar Supplies', item:'Cold Brew, Medium Roast', par:1.0},
+  {row:106, section:'Bar Supplies', item:'Butterfly Pea', par:2.0},
+  {row:107, section:'Bar Supplies', item:'DragonFruit Powder', par:1.0},
+  {row:108, section:'Bar Supplies', item:'Light Corn Syrup', par:0.25},
+  {row:109, section:'Bar Supplies', item:'Tonic Water, Tiny Bottles', par:0},
+  {row:110, section:'Bar Supplies', item:'Bamboo Knot Picks', par:0},
+  {row:111, section:'Bar Supplies', item:'Mint', par:1.0},
+  {row:112, section:'Bar Supplies', item:'Maple Syrup', par:2.0},
+];
+
+// ── SUPPLY ITEMS ────────────────────────────────────────────────
+const SUPPLY_ITEMS = [
+  {row:2, section:'FOH Supplies', item:'Small Square To Go Containers', par:1.0},
+  {row:3, section:'FOH Supplies', item:'Large Square To Go Containers', par:2.0},
+  {row:4, section:'FOH Supplies', item:'16 oz PET Drink Cups', par:4.0},
+  {row:5, section:'FOH Supplies', item:'16 oz Drink Lids', par:1.0},
+  {row:6, section:'FOH Supplies', item:'2 oz Sauce Cups', par:2.0},
+  {row:7, section:'FOH Supplies', item:'2 oz Lids', par:1.0},
+  {row:8, section:'FOH Supplies', item:'Dinner Napkins - 2ply', par:12.0},
+  {row:9, section:'FOH Supplies', item:'Beverage Napkin - 1ply', par:8.0},
+  {row:10, section:'FOH Supplies', item:'Bamboo Picks 4"', par:1.0},
+  {row:11, section:'FOH Supplies', item:'Drinking Straws', par:1.0},
+  {row:12, section:'FOH Supplies', item:'Waiter Pads', par:12.0},
+  {row:13, section:'FOH Supplies', item:'Writing Pens', par:2.0},
+  {row:14, section:'FOH Supplies', item:'5" Bar Straws', par:4.0},
+  {row:15, section:'FOH Supplies', item:'8" Bar Straws', par:4.0},
+  {row:16, section:'FOH Supplies', item:'Foaming Soap', par:3.0},
+  {row:17, section:'FOH Supplies', item:'Toilet Paper', par:10.0},
+  {row:18, section:'FOH Supplies', item:'Multi-Fold Towels', par:4.0},
+  {row:19, section:'FOH Supplies', item:'Roll Paper Towel', par:4.0},
+  {row:20, section:'FOH Supplies', item:'To Go Bags', par:1.0},
+  {row:21, section:'FOH Supplies', item:'D Batteries', par:6.0},
+  {row:22, section:'FOH Supplies', item:'Wood Mallet', par:10.0},
+  {row:23, section:'FOH Supplies', item:'Thermal Receipt Paper (Server)', par:10.0},
+  {row:24, section:'FOH Supplies', item:'Traditional Receipt Paper', par:10.0},
+  {row:25, section:'FOH Supplies', item:'Pac Punch Pouches', par:3.0},
+  {row:27, section:'Kitchen Supplies', item:'Small Pie Tins', par:1.0},
+  {row:28, section:'Kitchen Supplies', item:'Medium Pie Tins', par:0},
+  {row:29, section:'Kitchen Supplies', item:'Fry Powder (Oil Extender)', par:7.0},
+  {row:30, section:'Kitchen Supplies', item:'Sheet Pan Cover', par:0},
+  {row:31, section:'Kitchen Supplies', item:'Parchment Paper Full Sheet', par:100.0},
+  {row:32, section:'Kitchen Supplies', item:'Pastry Bags (12")', par:10.0},
+  {row:33, section:'Kitchen Supplies', item:'1/4 Sheet Liner', par:0},
+  {row:34, section:'Kitchen Supplies', item:'1/8 Sheet Liner', par:0},
+  {row:35, section:'Kitchen Supplies', item:'To Go Bags Plastic', par:0},
+  {row:36, section:'Kitchen Supplies', item:'Medium Gloves Vinyl/Nitrile', par:0},
+  {row:37, section:'Kitchen Supplies', item:'Large Gloves Vinyl/Nitrile', par:0},
+  {row:38, section:'Kitchen Supplies', item:'Fryer Boil Out', par:0},
+];
+
+// ── STATE ───────────────────────────────────────────────────────
+const counts = {};        // key: "food-row", "bar-row-storage", "bar-row-bar", "supply-row"
+const collapsed = new Set();
+let filterLow = false;
+let activeTab = 'food';
+let tokenClient = null;
+let accessToken = null;
+
+// ── AUTH ────────────────────────────────────────────────────────
+function loadGIS() {
+  if (!CLIENT_ID || CLIENT_ID.includes('PASTE')) return;
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.onload = () => {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID, scope: SCOPES,
+      callback: r => {
+        if (r.error) { showToast('Auth failed: ' + r.error, 'red'); return; }
+        accessToken = r.access_token;
+        pushToSheets();
+      }
+    });
+  };
+  document.head.appendChild(s);
+}
+
+// ── HELPERS ─────────────────────────────────────────────────────
+function key(tab, row, sub) { return sub ? `${tab}-${row}-${sub}` : `${tab}-${row}`; }
+function getCount(k) { return counts[k] !== undefined ? counts[k] : ''; }
+function setCount(k, val) { const n = parseFloat(val); counts[k] = isNaN(n) ? '' : n; updateStats(); }
+function stepCount(k, delta) {
+  const cur = getCount(k); const n = (cur === '' ? 0 : parseFloat(cur)) + delta;
+  counts[k] = Math.max(0, Math.round(n * 4) / 4);
+  const inp = document.getElementById('inp-' + k); if (inp) inp.value = counts[k];
+  updateStats();
+}
+function isLow(tab, row, sub) {
+  const items = tab === 'food' ? ITEMS : tab === 'bar' ? BAR_ITEMS : SUPPLY_ITEMS;
+  const item = items.find(i => i.row === row); if (!item || !item.par) return false;
+  const k = key(tab, row, sub); const v = getCount(k);
+  return v !== '' && parseFloat(v) < item.par;
+}
+
+function updateStats() {
+  const items = activeTab === 'food' ? ITEMS : activeTab === 'bar' ? BAR_ITEMS : SUPPLY_ITEMS;
+  let counted = 0, low = 0;
+  items.forEach(i => {
+    if (activeTab === 'bar') {
+      const ks = key('bar', i.row, 'storage'), kb = key('bar', i.row, 'bar');
+      if (getCount(ks) !== '' || getCount(kb) !== '') counted++;
+      if (isLow('bar', i.row, 'storage') || isLow('bar', i.row, 'bar')) low++;
+    } else {
+      const k = key(activeTab, i.row);
+      if (getCount(k) !== '') counted++;
+      if (isLow(activeTab, i.row)) low++;
+    }
+  });
+  document.getElementById('stat-total').textContent = items.length;
+  document.getElementById('stat-counted').textContent = counted;
+  document.getElementById('stat-low').textContent = low;
+}
+
+function toggleFilter() {
+  filterLow = !filterLow;
+  document.getElementById('filter-low').classList.toggle('active', filterLow);
+  renderActive();
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  ['food','bar','supply'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t === tab);
+    document.getElementById('panel-'+t).classList.toggle('active', t === tab);
+  });
+  document.getElementById('search').value = '';
+  filterLow = false;
+  document.getElementById('filter-low').classList.remove('active');
+  renderActive();
+}
+
+function renderActive() {
+  if (activeTab === 'food') renderList('food', ITEMS, 'food-list', false);
+  else if (activeTab === 'bar') renderList('bar', BAR_ITEMS, 'bar-list', true);
+  else renderList('supply', SUPPLY_ITEMS, 'supply-list', false);
+}
+
+function renderList(tab, allItems, listId, dualCount) {
+  const q = (document.getElementById('search').value || '').toLowerCase();
+  const sections = [...new Set(allItems.map(i => i.section))];
+  let html = '';
+  sections.forEach(section => {
+    let items = allItems.filter(i => i.section === section);
+    if (q) items = items.filter(i => i.item.toLowerCase().includes(q));
+    if (filterLow) items = items.filter(i => {
+      if (dualCount) return isLow(tab, i.row, 'storage') || isLow(tab, i.row, 'bar');
+      return isLow(tab, i.row);
+    });
+    if (!items.length) return;
+    const secId = (tab + '_' + section).replace(/[^a-zA-Z0-9_]/g, '_');
+    const isCollapsed = collapsed.has(secId);
+    html += `<div class="section-hdr${isCollapsed ? ' collapsed' : ''}" onclick="toggleSection('${secId}')">
+      <span class="section-title">${section}</span>
+      <span class="section-count">${items.length} items <span class="sec-chevron">▼</span></span>
+    </div>
+    <div class="section-items${isCollapsed ? ' collapsed' : ''}" id="sec-${secId}">`;
+    items.forEach(i => {
+      const parTxt = i.par > 0 ? `par: ${i.par}` : '';
+      if (dualCount) {
+        const ks = key(tab, i.row, 'storage'), kb = key(tab, i.row, 'bar');
+        const vs = getCount(ks), vb = getCount(kb);
+        const lowRow = isLow(tab, i.row, 'storage') || isLow(tab, i.row, 'bar');
+        html += `<div class="item-row${lowRow ? ' low' : ' ok'}" id="r-${tab}-${i.row}">
+          <div class="item-info">
+            <div class="item-name">${i.item}</div>
+            <div class="item-meta">${parTxt ? `<span class="item-par${lowRow ? ' low' : vs !== '' || vb !== '' ? ' ok' : ''}">${parTxt}</span>` : ''}</div>
+          </div>
+          <div class="dual-count">
+            <div><div class="count-label">Storage</div><div class="count-wrap">
+              <button class="count-btn" onclick="stepCount('${ks}',-0.25)">−</button>
+              <input class="count-input${isLow(tab,i.row,'storage')?' low':vs!==''?' ok':''}" id="inp-${ks}" type="number" min="0" step="0.25" value="${vs}" placeholder="—" oninput="setCount('${ks}',this.value)">
+              <button class="count-btn" onclick="stepCount('${ks}',0.25)">+</button>
+            </div></div>
+            <div><div class="count-label">Bar</div><div class="count-wrap">
+              <button class="count-btn" onclick="stepCount('${kb}',-0.25)">−</button>
+              <input class="count-input${isLow(tab,i.row,'bar')?' low':vb!==''?' ok':''}" id="inp-${kb}" type="number" min="0" step="0.25" value="${vb}" placeholder="—" oninput="setCount('${kb}',this.value)">
+              <button class="count-btn" onclick="stepCount('${kb}',0.25)">+</button>
+            </div></div>
+          </div>
+        </div>`;
+      } else {
+        const k = key(tab, i.row); const v = getCount(k);
+        const lowRow = isLow(tab, i.row);
+        html += `<div class="item-row${lowRow ? ' low' : ' ok'}" id="r-${tab}-${i.row}">
+          <div class="item-info">
+            <div class="item-name">${i.item}</div>
+            <div class="item-meta">${'uom' in i && i.uom ? i.uom + ' &nbsp;·&nbsp; ' : ''}${parTxt ? `<span class="item-par${lowRow ? ' low' : v !== '' ? ' ok' : ''}">${parTxt}</span>` : ''}</div>
+          </div>
+          <div class="count-wrap">
+            <button class="count-btn" onclick="stepCount('${k}',-0.25)">−</button>
+            <input class="count-input${lowRow?' low':v!==''?' ok':''}" id="inp-${k}" type="number" min="0" step="0.25" value="${v}" placeholder="—" oninput="setCount('${k}',this.value)">
+            <button class="count-btn" onclick="stepCount('${k}',0.25)">+</button>
+          </div>
+        </div>`;
+      }
+    });
+    html += '</div>';
+  });
+  if (!html) html = '<div class="empty">No items match your search.</div>';
+  document.getElementById(listId).innerHTML = html;
+  updateStats();
+}
+
+function toggleSection(secId) {
+  if (collapsed.has(secId)) collapsed.delete(secId); else collapsed.add(secId);
+  renderActive();
+}
+
+// ── SYNC ────────────────────────────────────────────────────────
+function startSync() {
+  const sheet = SHEETS[activeTab];
+  const items = activeTab === 'food' ? ITEMS : activeTab === 'bar' ? BAR_ITEMS : SUPPLY_ITEMS;
+  let hasCounts = false;
+  items.forEach(i => {
+    if (activeTab === 'bar') {
+      if (getCount(key('bar',i.row,'storage')) !== '' || getCount(key('bar',i.row,'bar')) !== '') hasCounts = true;
+    } else {
+      if (getCount(key(activeTab,i.row)) !== '') hasCounts = true;
+    }
+  });
+  if (!hasCounts) { showToast('No counts to sync yet', 'red'); return; }
+  document.getElementById('auth-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('auth-modal').classList.remove('open'); }
+function doAuth() {
+  closeModal();
+  if (!tokenClient) { showToast('Google auth not loaded', 'red'); return; }
+  if (accessToken) { pushToSheets(); return; }
+  tokenClient.requestAccessToken();
+}
+
+async function pushToSheets() {
+  const btn = document.getElementById('sync-btn');
+  btn.textContent = 'Syncing...'; btn.disabled = true; btn.className = 'sync-btn syncing';
+  const sheet = SHEETS[activeTab];
+  const items = activeTab === 'food' ? ITEMS : activeTab === 'bar' ? BAR_ITEMS : SUPPLY_ITEMS;
+  const data = [];
+
+  items.forEach(i => {
+    if (activeTab === 'bar') {
+      const vs = getCount(key('bar', i.row, 'storage'));
+      const vb = getCount(key('bar', i.row, 'bar'));
+      if (vs !== '') data.push({ range: `${sheet.tab}!C${i.row}`, values: [[vs]] });
+      if (vb !== '') data.push({ range: `${sheet.tab}!D${i.row}`, values: [[vb]] });
+    } else {
+      const v = getCount(key(activeTab, i.row));
+      if (v !== '') data.push({ range: `${sheet.tab}!D${i.row}`, values: [[v]] });
+    }
+  });
+
+  try {
+    const resp = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheet.id}/values:batchUpdate`,
+      { method: 'POST', headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+         body: JSON.stringify({ valueInputOption: 'USER_ENTERED', data }) }
+    );
+    if (!resp.ok) { const e = await resp.json(); throw new Error(e.error?.message || resp.statusText); }
+    btn.textContent = 'Synced ✓'; btn.className = 'sync-btn success';
+    showToast(`${data.length} counts synced`, 'green');
+    setTimeout(() => { btn.textContent = 'Sync to Sheet'; btn.disabled = false; btn.className = 'sync-btn'; }, 3000);
+  } catch(e) {
+    btn.textContent = 'Sync Failed'; btn.className = 'sync-btn error'; btn.disabled = false;
+    showToast('Sync failed: ' + e.message, 'red'); accessToken = null;
+    setTimeout(() => { btn.textContent = 'Sync to Sheet'; btn.className = 'sync-btn'; }, 3000);
+  }
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast'); t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(t._t); t._t = setTimeout(() => t.className = 'toast', 3000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('footer-date').textContent =
+    new Date().toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric',year:'numeric'}).toUpperCase();
+  loadGIS();
+  renderActive();
+});
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js'));
 </script>
 </body>
