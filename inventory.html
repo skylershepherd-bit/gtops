@@ -134,7 +134,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
 .count-input.low{border-color:var(--red-bd);color:var(--red)}.count-input.ok{border-color:var(--green-bd)}
 /* SYNC BTN */
 .sync-btn{background:var(--accent);color:#000;border:none;border-radius:6px;padding:6px 14px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .15s}
-.sync-btn:hover{background:var(--accent-dark)}.sync-btn:disabled{opacity:.4;cursor:default}
+.sync-btn:hover{background:var(--accent-dark)}
+.clear-btn{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--red);cursor:pointer;white-space:nowrap;transition:all .15s}
+.clear-btn:hover{background:var(--red-bg);border-color:var(--red-bd)}.sync-btn:disabled{opacity:.4;cursor:default}
 .sync-btn.syncing{background:var(--surface2);color:var(--muted)}
 .sync-btn.success{background:var(--green);color:#fff}.sync-btn.error{background:var(--red);color:#fff}
 /* MODAL */
@@ -162,7 +164,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:
     <span class="topbar-sep">/</span>
     <span class="topbar-page">Inventory</span>
   </div>
-  <div class="topbar-right"><button class="sync-btn" id="sync-btn" onclick="startSync()">Sync to Sheet</button></div>
+  <div class="topbar-right"><button class="clear-btn" id="clear-btn" onclick="confirmClear()">Clear All</button><button class="sync-btn" id="sync-btn" onclick="startSync()">Sync to Sheet</button></div>
 </header>
 
   <!-- TABS -->
@@ -575,18 +577,39 @@ function loadGIS() {
 // ── HELPERS ─────────────────────────────────────────────────────
 function key(tab, row, sub) { return sub ? `${tab}-${row}-${sub}` : `${tab}-${row}`; }
 function getCount(k) { return counts[k] !== undefined ? counts[k] : ''; }
-function setCount(k, val) { const n = parseFloat(val); counts[k] = isNaN(n) ? '' : n; updateStats(); }
+function setCount(k, val) { const n = parseFloat(val); counts[k] = isNaN(n) ? '' : n; saveCounts(); updateStats(); }
 function stepCount(k, delta) {
   const cur = getCount(k); const n = (cur === '' ? 0 : parseFloat(cur)) + delta;
   counts[k] = Math.max(0, Math.round(n * 4) / 4);
   const inp = document.getElementById('inp-' + k); if (inp) inp.value = counts[k];
-  updateStats();
+  saveCounts(); updateStats();
 }
 function isLow(tab, row, sub) {
   const items = tab === 'food' ? ITEMS : tab === 'bar' ? BAR_ITEMS : SUPPLY_ITEMS;
   const item = items.find(i => i.row === row); if (!item || !item.par) return false;
   const k = key(tab, row, sub); const v = getCount(k);
   return v !== '' && parseFloat(v) < item.par;
+}
+
+
+function saveCounts() {
+  try { localStorage.setItem('gtops_counts', JSON.stringify(counts)); } catch(e) {}
+}
+function loadCounts() {
+  try {
+    const saved = localStorage.getItem('gtops_counts');
+    if (saved) { Object.assign(counts, JSON.parse(saved)); }
+  } catch(e) {}
+}
+function confirmClear() {
+  if (confirm('Clear all counts for the ' + activeTab + ' tab?')) {
+    const prefix = activeTab + '-';
+    Object.keys(counts).forEach(k => { if (k.startsWith(prefix)) delete counts[k]; });
+    saveCounts();
+    renderActive();
+    updateStats();
+    showToast('Counts cleared', 'green');
+  }
 }
 
 function updateStats() {
@@ -770,6 +793,7 @@ function showToast(msg, type) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  loadCounts();
   document.getElementById('footer-date').textContent =
     new Date().toLocaleDateString('en-US', {weekday:'long',month:'long',day:'numeric',year:'numeric'}).toUpperCase();
   loadGIS();
