@@ -379,8 +379,8 @@ body{display:flex}
 // ────────────────────────────────────────────
 // DATA
 // ────────────────────────────────────────────
-const DAYS = ['2026-03-22','2026-03-23','2026-03-24','2026-03-25','2026-03-26','2026-03-27','2026-03-28'];
-const DAY_SHORT = {
+let DAYS = ['2026-03-22','2026-03-23','2026-03-24','2026-03-25','2026-03-26','2026-03-27','2026-03-28'];
+let DAY_SHORT = {
   '2026-03-22':'Sun','2026-03-23':'Mon','2026-03-24':'Tue',
   '2026-03-25':'Wed','2026-03-26':'Thu','2026-03-27':'Fri','2026-03-28':'Sat'
 };
@@ -391,7 +391,7 @@ const DM = {
   mgmt:{label:'Mgmt',full:'Management',  color:'#027a48',bar:'rgba(2,122,72,0.75)',   bg:'rgba(2,122,72,0.12)'}
 };
 
-const rawData = [
+let rawData = [
   {date:"2026-03-22",label:"Sun 3/22",short:"Sun",lists:[
     {name:"BOH Closing Checklist",complete:29,total:29,pct:100,completers:["Christina Miller","Orlando Palacios"],dept:"boh"},
     {name:"BOH Opening Checklist",complete:18,total:18,pct:100,completers:["Sheila Bryant","Skyler Shepherd"],dept:"boh"},
@@ -753,41 +753,120 @@ function handleCSVUpload(input) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = function(e) {
-    const csv = e.target.result;
-    const parsed = parseCSV(csv);
-    if (parsed && parsed.length > 0) {
-      processData(parsed);
-      // Update date chip from data
-      const dates = parsed.map(r => r['Start Date'] || r['start_date'] || r['Date'] || '').filter(Boolean);
-      if (dates.length) {
-        const sorted = dates.sort();
-        const start = new Date(sorted[0]).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-        const end = new Date(sorted[sorted.length-1]).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-        const chip = document.getElementById('date-range-chip');
-        if (chip) chip.textContent = start + ' – ' + end;
-      }
-    }
+    const parsed = parseCSV(e.target.result);
+    if (!parsed || parsed.length === 0) { alert('Could not read CSV — please check the file.'); return; }
+    processData(parsed);
   };
   reader.readAsText(file);
+  // Reset input so same file can be re-uploaded
+  input.value = '';
 }
 
 function parseCSV(text) {
-  const lines = text.trim().split('\n');
+  const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return [];
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''));
-  return lines.slice(1).map(line => {
-    const vals = [];
-    let cur = '', inQ = false;
-    for (let ch of line) {
-      if (ch === '"') { inQ = !inQ; }
-      else if (ch === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
-      else cur += ch;
-    }
-    vals.push(cur.trim());
+  const headers = parseLine(lines[0]);
+  return lines.slice(1).filter(l => l.trim()).map(line => {
+    const vals = parseLine(line);
     const obj = {};
-    headers.forEach((h,i) => { obj[h] = (vals[i]||'').replace(/^"|"$/g,''); });
+    headers.forEach((h,i) => { obj[h] = vals[i] || ''; });
     return obj;
   });
+}
+
+function parseLine(line) {
+  const vals = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (ch === ',' && !inQ) {
+      vals.push(cur.trim());
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  vals.push(cur.trim());
+  return vals;
+}
+
+function deptKey(deptStr) {
+  const d = (deptStr || '').toLowerCase();
+  if (d.includes('back of house') || d.includes('boh')) return 'boh';
+  if (d.includes('management')) return 'mgmt';
+  return 'foh';
+}
+
+function processData(rows) {
+  // Group by Start Date
+  const byDate = {};
+  rows.forEach(r => {
+    const date = r['Start Date'] || r['Due Date'] || '';
+    if (!date) return;
+    if (!byDate[date]) byDate[date] = {};
+    const list = r['Task List'] || 'Unknown';
+    if (!byDate[date][list]) byDate[date][list] = { name: list, dept: deptKey(r['Task Assignment (Department)']), tasks: [] };
+    byDate[date][list].tasks.push(r);
+  });
+
+  // Build rawData array sorted by date
+  const newRawData = Object.keys(byDate).sort().map(date => {
+    const d = new Date(date + 'T12:00:00');
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const short = dayNames[d.getDay()];
+    const label = short + ' ' + (d.getMonth()+1) + '/' + d.getDate();
+
+    const lists = Object.values(byDate[date]).map(listObj => {
+      const tasks = listObj.tasks;
+      const total = tasks.length;
+      const complete = tasks.filter(t => t['Status'] === '1').length;
+      const pct = total > 0 ? Math.round((complete / total) * 100) : 0;
+      const completers = [...new Set(tasks.filter(t => t['Completed By']).map(t => t['Completed By']))];
+      return { name: listObj.name, complete, total, pct, completers, dept: listObj.dept };
+    });
+
+    return { date, label, short, lists };
+  });
+
+  // Update global rawData and DAYS
+  window.rawData = newRawData;
+  window.DAYS = newRawData.map(d => d.date);
+
+  // Rebuild DAY_SHORT
+  window.DAY_SHORT = {};
+  newRawData.forEach(d => { window.DAY_SHORT[d.date] = d.short; });
+
+  // Update date chip
+  if (newRawData.length) {
+    const first = newRawData[0];
+    const last = newRawData[newRawData.length - 1];
+    const fmt = date => {
+      const d = new Date(date + 'T12:00:00');
+      return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+    };
+    const chip = document.getElementById('date-range-chip');
+    if (chip) chip.textContent = fmt(first.date) + ' – ' + fmt(last.date);
+  }
+
+  // Re-render the whole report
+  rebuildReport();
+}
+
+function rebuildReport() {
+  // Re-run all the rendering functions that use rawData/DAYS
+  if (typeof buildSummaryKPIs === 'function') buildSummaryKPIs();
+  if (typeof buildWeeklyChart === 'function') buildWeeklyChart();
+  if (typeof buildDeptBreakdown === 'function') buildDeptBreakdown();
+  if (typeof buildDailyCards === 'function') buildDailyCards();
+  if (typeof buildCLTable === 'function') buildCLTable('all');
+  // Trigger re-render by simulating page navigation to current page
+  const activeBtn = document.querySelector('.page-btn.active') || document.querySelector('[onclick*="overview"]');
+  if (activeBtn) activeBtn.click();
+  else if (typeof showPage === 'function') showPage('overview', null);
 }
 
 </script>
