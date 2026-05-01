@@ -577,7 +577,7 @@ function showPage(id,btn){
   document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  btn.classList.add('active');
+  if(btn) btn.classList.add('active');
   document.getElementById('topbarPage').textContent=pageNames[id];
 }
 
@@ -634,6 +634,7 @@ document.getElementById('attentionList').innerHTML=attention.slice(0,10).map(a=>
 
 // Tabs + Day Panels
 const tabsRow=document.getElementById('tabsRow'),panelsEl=document.getElementById('dayPanels');
+tabsRow.innerHTML='';panelsEl.innerHTML='';
 window.rawData.forEach((day,idx)=>{
   const t=dt(day.lists,null);
   const btn=document.createElement('button');btn.className='tab'+(idx===0?' active':'');
@@ -651,6 +652,7 @@ window.rawData.forEach((day,idx)=>{
 // DEPARTMENTS PAGE
 // ────────────────────────────────────────────
 const deptTabRow=document.getElementById('deptTabRow'),deptViews=document.getElementById('deptViews');
+deptTabRow.innerHTML='';deptViews.innerHTML='';
 ['foh','boh','mgmt'].forEach((key,i)=>{
   const btn=document.createElement('button');btn.className='dept-tab'+(i===0?' active '+key:'');
   btn.textContent=DM[key].full;
@@ -877,9 +879,10 @@ function rebuildReport() {
   if (typeof buildCLTable === 'function') buildCLTable('all');
   // Re-render entire report
   renderAll();
-  // Return to dashboard
-  const dashBtn = document.querySelector('[data-page="dashboard"]');
-  if (dashBtn) { dashBtn.click(); }
+  // Return to dashboard tab
+  const dashBtn = document.querySelector('.nav-btn[data-page="dashboard"]');
+  if (dashBtn) dashBtn.click();
+  else showPage('dashboard', document.querySelector('[data-page="dashboard"]'));
 }
 
 </script>
