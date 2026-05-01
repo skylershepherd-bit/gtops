@@ -560,6 +560,7 @@ function dt(lists,dept){
 function avatarColor(n){const cols=['#6941c6','#1d4ed8','#c4320a','#027a48','#b54708','#0369a1','#7c3aed'];return cols[n.charCodeAt(0)%cols.length]}
 function initials(n){return n.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase()}
 
+const pageNames={dashboard:"Dashboard",departments:"Departments",checklists:"Checklists",employees:"Employees"};
 function renderAll() {
   // Destroy existing Chart.js instances to prevent canvas reuse errors
   Object.values(Chart.instances || {}).forEach(ch => ch.destroy());
@@ -572,14 +573,8 @@ const missed=allLists.filter(l=>l.pct===0).length;
 // ────────────────────────────────────────────
 // PAGE NAVIGATION
 // ────────────────────────────────────────────
-const pageNames={dashboard:'Dashboard',departments:'Departments',checklists:'Checklists',employees:'Employees'};
-function showPage(id,btn){
-  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  if(btn) btn.classList.add('active');
-  document.getElementById('topbarPage').textContent=pageNames[id];
-}
+// pageNames defined globally
+
 
 // ────────────────────────────────────────────
 // DASHBOARD PAGE
@@ -697,23 +692,11 @@ document.getElementById('clKpiRow').innerHTML=[
   {l:'Avg Completion',v:Math.round(clC/clT*100)+'%',s:'',dot:'#1d4ed8',ft:`${clC} of ${clT} tasks`}
 ].map(k=>`<div class="kpi"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}<span class="kpi-sub">${k.s}</span></div><div class="kpi-ft"><span class="dot" style="background:${k.dot}"></span>${k.ft}</div></div>`).join('');
 
-function buildCLTable(filter){
-  const rows=checklistData.filter(c=>filter==='all'||c.dept===filter).sort((a,b)=>a.pct-b.pct);
-  const thead=`<thead><tr><th>Checklist</th><th>Dept</th>${window.DAYS.map(d=>`<th style="text-align:center">${window.DAY_SHORT[d]}</th>`).join('')}<th>Week %</th><th>Tasks</th></tr></thead>`;
-  const tbody='<tbody>'+rows.map(cl=>{
-    const dots=window.DAYS.map(d=>{const bd=cl.byDay[d];if(!bd)return`<td style="text-align:center"><div class="wd na" style="margin:auto">—</div></td>`;const hit=bd.c===bd.t;return`<td style="text-align:center"><div class="wd ${hit?'hit':'miss'}" style="margin:auto">${hit?'✓':'✗'}</div></td>`}).join('');
-    return`<tr><td><div style="font-size:13px;font-weight:600;color:var(--text)">${cl.name}</div></td><td><span class="pill ${cl.dept}">${DM[cl.dept].label}</span></td>${dots}<td><div style="display:flex;align-items:center;gap:8px"><div class="bar-sm"><div class="bar-sm-fill" style="width:${cl.pct}%;background:${cl.pct===100?'#079455':cl.pct===0?'#d92d20':'#f79009'}"></div></div><span class="badge ${pc(cl.pct)}">${cl.pct}%</span></div></td><td><span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--muted)">${cl.complete}/${cl.total}</span></td></tr>`;
-  }).join('')+'</tbody>';
-  document.getElementById('clTable').innerHTML=thead+tbody;
-}
+
 buildCLTable('all');
 
 let activeClFilter='all';
-function filterCL(f){
-  activeClFilter=f;
-  ['all','foh','boh','mgmt'].forEach(x=>document.getElementById('clf-'+x).style.opacity=x===f?'1':'0.45');
-  buildCLTable(f);
-}
+
 filterCL('all');
 
 // ────────────────────────────────────────────
@@ -759,6 +742,35 @@ document.getElementById('empTable').innerHTML=`
     </tr>`;
   }).join('')}</tbody>`;
 
+}ground:rgba(2,122,72,0.5)" title="Mgmt: ${e.mgmt}"></div>`:''}</div></td>
+    </tr>`;
+  }).join('')}</tbody>`;
+
+}
+
+// ── Functions moved outside renderAll ──
+function showPage(id,btn){
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  document.getElementById('topbarPage').textContent=pageNames[id];
+}
+
+function buildCLTable(filter){
+  const rows=checklistData.filter(c=>filter==='all'||c.dept===filter).sort((a,b)=>a.pct-b.pct);
+  const thead=`<thead><tr><th>Checklist</th><th>Dept</th>${window.DAYS.map(d=>`<th style="text-align:center">${window.DAY_SHORT[d]}</th>`).join('')}<th>Week %</th><th>Tasks</th></tr></thead>`;
+  const tbody='<tbody>'+rows.map(cl=>{
+    const dots=window.DAYS.map(d=>{const bd=cl.byDay[d];if(!bd)return`<td style="text-align:center"><div class="wd na" style="margin:auto">—</div></td>`;const hit=bd.c===bd.t;return`<td style="text-align:center"><div class="wd ${hit?'hit':'miss'}" style="margin:auto">${hit?'✓':'✗'}</div></td>`}).join('');
+    return`<tr><td><div style="font-size:13px;font-weight:600;color:var(--text)">${cl.name}</div></td><td><span class="pill ${cl.dept}">${DM[cl.dept].label}</span></td>${dots}<td><div style="display:flex;align-items:center;gap:8px"><div class="bar-sm"><div class="bar-sm-fill" style="width:${cl.pct}%;background:${cl.pct===100?'#079455':cl.pct===0?'#d92d20':'#f79009'}"></div></div><span class="badge ${pc(cl.pct)}">${cl.pct}%</span></div></td><td><span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--muted)">${cl.complete}/${cl.total}</span></td></tr>`;
+  }).join('')+'</tbody>';
+  document.getElementById('clTable').innerHTML=thead+tbody;
+}
+
+function filterCL(f){
+  activeClFilter=f;
+  ['all','foh','boh','mgmt'].forEach(x=>document.getElementById('clf-'+x).style.opacity=x===f?'1':'0.45');
+  buildCLTable(f);
 }
 renderAll();
 
