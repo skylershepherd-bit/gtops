@@ -379,11 +379,14 @@ body{display:flex}
 // ────────────────────────────────────────────
 // DATA
 // ────────────────────────────────────────────
+if (!window.rawData) window.rawData = rawData;
 let DAYS = ['2026-03-22','2026-03-23','2026-03-24','2026-03-25','2026-03-26','2026-03-27','2026-03-28'];
+if (!window.DAYS) window.DAYS = DAYS;
 let DAY_SHORT = {
   '2026-03-22':'Sun','2026-03-23':'Mon','2026-03-24':'Tue',
   '2026-03-25':'Wed','2026-03-26':'Thu','2026-03-27':'Fri','2026-03-28':'Sat'
 };
+if (!window.DAY_SHORT) window.DAY_SHORT = DAY_SHORT;
 
 const DM = {
   foh:{label:'FOH',full:'Front of House',color:'#6941c6',bar:'rgba(105,65,198,0.75)',bg:'rgba(105,65,198,0.12)'},
@@ -391,6 +394,7 @@ const DM = {
   mgmt:{label:'Mgmt',full:'Management',  color:'#027a48',bar:'rgba(2,122,72,0.75)',   bg:'rgba(2,122,72,0.12)'}
 };
 
+window.rawData = window.rawData || null;
 let rawData = [
   {date:"2026-03-22",label:"Sun 3/22",short:"Sun",lists:[
     {name:"BOH Closing Checklist",complete:29,total:29,pct:100,completers:["Christina Miller","Orlando Palacios"],dept:"boh"},
@@ -561,7 +565,7 @@ function renderAll() {
   Object.values(Chart.instances || {}).forEach(ch => ch.destroy());
   if (window._gtCharts) window._gtCharts.forEach(ch => { try { ch.destroy(); } catch(e){} });
   window._gtCharts = [];
-const allLists=rawData.flatMap(d=>d.lists);
+const allLists=window.rawData.flatMap(d=>d.lists);
 const ov=dt(allLists,null),fohAll=dt(allLists,'foh'),bohAll=dt(allLists,'boh'),mgmtAll=dt(allLists,'mgmt');
 const missed=allLists.filter(l=>l.pct===0).length;
 
@@ -585,7 +589,7 @@ document.getElementById('kpiRow').innerHTML=[
   {l:'Overall Completion',v:ov.pct+'%',s:'',dot:'#1d4ed8',ft:`${ov.complete} of ${ov.total} tasks`},
   {l:'Checklists Passed',v:ov.lists100,s:'/'+allLists.length,dot:'#079455',ft:'100% completion'},
   {l:'Checklists Missed',v:missed,s:'',dot:'#d92d20',ft:'0% — not started'},
-  {l:'Days Tracked',v:rawData.length,s:'/7',dot:'#667085',ft:'Mar 22 – Mar 28'}
+  {l:'Days Tracked',v:window.rawData.length,s:'/7',dot:'#667085',ft:'Mar 22 – Mar 28'}
 ].map(k=>`<div class="kpi"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}<span class="kpi-sub">${k.s}</span></div><div class="kpi-ft"><span class="dot" style="background:${k.dot}"></span>${k.ft}</div></div>`).join('');
 
 // Dept Cards
@@ -612,25 +616,25 @@ document.getElementById('chartLegend').innerHTML=['foh','boh','mgmt'].map(k=>`<d
 // Main Chart
 window._gtCharts.push(new Chart(document.getElementById('mainChart'),{
   type:'bar',
-  data:{labels:rawData.map(d=>d.short),datasets:['foh','boh','mgmt'].map(k=>({
-    label:DM[k].full,data:rawData.map(d=>dt(d.lists,k).pct),
+  data:{labels:window.rawData.map(d=>d.short),datasets:['foh','boh','mgmt'].map(k=>({
+    label:DM[k].full,data:window.rawData.map(d=>dt(d.lists,k).pct),
     backgroundColor:DM[k].bg,borderColor:DM[k].bar,borderWidth:1.5,borderRadius:4,borderSkipped:false
   }))},
   options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#101828',titleColor:'#f9fafb',bodyColor:'#d0d5dd',borderColor:'#1d2939',borderWidth:1,padding:10,cornerRadius:8,
-    callbacks:{title:i=>rawData[i[0].dataIndex].label,label:ctx=>{const d=rawData[ctx.dataIndex],k=['foh','boh','mgmt'][ctx.datasetIndex],t=dt(d.lists,k);return` ${DM[k].label}: ${ctx.raw}% (${t.complete}/${t.total})`}}}},
+    callbacks:{title:i=>window.rawData[i[0].dataIndex].label,label:ctx=>{const d=window.rawData[ctx.dataIndex],k=['foh','boh','mgmt'][ctx.datasetIndex],t=dt(d.lists,k);return` ${DM[k].label}: ${ctx.raw}% (${t.complete}/${t.total})`}}}},
     scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#667085',font:{family:'Geist Mono',size:12}}},y:{min:0,max:100,grid:{color:'#f2f4f7'},border:{display:false},ticks:{color:'#98a2b3',font:{family:'Geist Mono',size:11},callback:v=>v+'%',stepSize:25}}}}
 }));
 
 // Attention list
 const attention=[];
-rawData.forEach(d=>d.lists.filter(l=>l.pct<100).forEach(l=>attention.push({name:l.name,day:d.short,pct:l.pct,dept:l.dept})));
+window.rawData.forEach(d=>d.lists.filter(l=>l.pct<100).forEach(l=>attention.push({name:l.name,day:d.short,pct:l.pct,dept:l.dept})));
 attention.sort((a,b)=>a.pct-b.pct);
 document.getElementById('attentionList').innerHTML=attention.slice(0,10).map(a=>`
   <li class="att-item"><span class="pill ${a.dept}" style="font-size:10px;padding:2px 6px">${DM[a.dept].label}</span><span class="att-name" title="${a.name}">${a.name}</span><span class="att-day">${a.day}</span><span class="badge ${pc(a.pct)}">${a.pct}%</span></li>`).join('');
 
 // Tabs + Day Panels
 const tabsRow=document.getElementById('tabsRow'),panelsEl=document.getElementById('dayPanels');
-rawData.forEach((day,idx)=>{
+window.rawData.forEach((day,idx)=>{
   const t=dt(day.lists,null);
   const btn=document.createElement('button');btn.className='tab'+(idx===0?' active':'');
   btn.innerHTML=`<span>${day.short}</span><span class="tab-sub">${t.pct}%</span>`;
@@ -654,7 +658,7 @@ const deptTabRow=document.getElementById('deptTabRow'),deptViews=document.getEle
   deptTabRow.appendChild(btn);
 
   const d=key==='foh'?fohAll:key==='boh'?bohAll:mgmtAll;
-  const dailyBoxes=rawData.map(day=>{
+  const dailyBoxes=window.rawData.map(day=>{
     const dd=dt(day.lists,key);if(!dd.total)return`<div class="dday"><div class="dday-label">${day.short}</div><div class="dday-pct" style="color:var(--muted2)">—</div><div class="dday-count">N/A</div><div class="dday-bar"></div></div>`;
     const pC=dd.pct===100?DM[key].color:dd.pct===0?'#d92d20':'#f79009';
     return`<div class="dday"><div class="dday-label">${day.short}</div><div class="dday-pct" style="color:${pC}">${dd.pct}%</div><div class="dday-count">${dd.complete}/${dd.total}</div><div class="dday-bar"><div class="dday-fill" style="width:${dd.pct}%;background:${pC}"></div></div></div>`;
@@ -693,9 +697,9 @@ document.getElementById('clKpiRow').innerHTML=[
 
 function buildCLTable(filter){
   const rows=checklistData.filter(c=>filter==='all'||c.dept===filter).sort((a,b)=>a.pct-b.pct);
-  const thead=`<thead><tr><th>Checklist</th><th>Dept</th>${DAYS.map(d=>`<th style="text-align:center">${DAY_SHORT[d]}</th>`).join('')}<th>Week %</th><th>Tasks</th></tr></thead>`;
+  const thead=`<thead><tr><th>Checklist</th><th>Dept</th>${window.DAYS.map(d=>`<th style="text-align:center">${window.DAY_SHORT[d]}</th>`).join('')}<th>Week %</th><th>Tasks</th></tr></thead>`;
   const tbody='<tbody>'+rows.map(cl=>{
-    const dots=DAYS.map(d=>{const bd=cl.byDay[d];if(!bd)return`<td style="text-align:center"><div class="wd na" style="margin:auto">—</div></td>`;const hit=bd.c===bd.t;return`<td style="text-align:center"><div class="wd ${hit?'hit':'miss'}" style="margin:auto">${hit?'✓':'✗'}</div></td>`}).join('');
+    const dots=window.DAYS.map(d=>{const bd=cl.byDay[d];if(!bd)return`<td style="text-align:center"><div class="wd na" style="margin:auto">—</div></td>`;const hit=bd.c===bd.t;return`<td style="text-align:center"><div class="wd ${hit?'hit':'miss'}" style="margin:auto">${hit?'✓':'✗'}</div></td>`}).join('');
     return`<tr><td><div style="font-size:13px;font-weight:600;color:var(--text)">${cl.name}</div></td><td><span class="pill ${cl.dept}">${DM[cl.dept].label}</span></td>${dots}<td><div style="display:flex;align-items:center;gap:8px"><div class="bar-sm"><div class="bar-sm-fill" style="width:${cl.pct}%;background:${cl.pct===100?'#079455':cl.pct===0?'#d92d20':'#f79009'}"></div></div><span class="badge ${pc(cl.pct)}">${cl.pct}%</span></div></td><td><span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--muted)">${cl.complete}/${cl.total}</span></td></tr>`;
   }).join('')+'</tbody>';
   document.getElementById('clTable').innerHTML=thead+tbody;
