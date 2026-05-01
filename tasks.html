@@ -556,6 +556,11 @@ function dt(lists,dept){
 function avatarColor(n){const cols=['#6941c6','#1d4ed8','#c4320a','#027a48','#b54708','#0369a1','#7c3aed'];return cols[n.charCodeAt(0)%cols.length]}
 function initials(n){return n.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase()}
 
+function renderAll() {
+  // Destroy existing Chart.js instances to prevent canvas reuse errors
+  Object.values(Chart.instances || {}).forEach(ch => ch.destroy());
+  if (window._gtCharts) window._gtCharts.forEach(ch => { try { ch.destroy(); } catch(e){} });
+  window._gtCharts = [];
 const allLists=rawData.flatMap(d=>d.lists);
 const ov=dt(allLists,null),fohAll=dt(allLists,'foh'),bohAll=dt(allLists,'boh'),mgmtAll=dt(allLists,'mgmt');
 const missed=allLists.filter(l=>l.pct===0).length;
@@ -605,7 +610,7 @@ document.getElementById('deptRow').innerHTML=['foh','boh','mgmt'].map(key=>{
 document.getElementById('chartLegend').innerHTML=['foh','boh','mgmt'].map(k=>`<div class="cl-item"><div class="cl-dot" style="background:${DM[k].bar}"></div>${DM[k].label}</div>`).join('');
 
 // Main Chart
-new Chart(document.getElementById('mainChart'),{
+window._gtCharts.push(new Chart(document.getElementById('mainChart'),{
   type:'bar',
   data:{labels:rawData.map(d=>d.short),datasets:['foh','boh','mgmt'].map(k=>({
     label:DM[k].full,data:rawData.map(d=>dt(d.lists,k).pct),
@@ -614,7 +619,7 @@ new Chart(document.getElementById('mainChart'),{
   options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#101828',titleColor:'#f9fafb',bodyColor:'#d0d5dd',borderColor:'#1d2939',borderWidth:1,padding:10,cornerRadius:8,
     callbacks:{title:i=>rawData[i[0].dataIndex].label,label:ctx=>{const d=rawData[ctx.dataIndex],k=['foh','boh','mgmt'][ctx.datasetIndex],t=dt(d.lists,k);return` ${DM[k].label}: ${ctx.raw}% (${t.complete}/${t.total})`}}}},
     scales:{x:{grid:{display:false},border:{display:false},ticks:{color:'#667085',font:{family:'Geist Mono',size:12}}},y:{min:0,max:100,grid:{color:'#f2f4f7'},border:{display:false},ticks:{color:'#98a2b3',font:{family:'Geist Mono',size:11},callback:v=>v+'%',stepSize:25}}}}
-});
+}));
 
 // Attention list
 const attention=[];
@@ -716,7 +721,7 @@ document.getElementById('empKpiRow').innerHTML=[
 ].map(k=>`<div class="kpi"><div class="kpi-lbl">${k.l}</div><div class="kpi-val">${k.v}<span class="kpi-sub">${k.s}</span></div><div class="kpi-ft"><span class="dot" style="background:${k.dot}"></span>${k.ft}</div></div>`).join('');
 
 // Employee chart
-new Chart(document.getElementById('empChart'),{
+window._gtCharts.push(new Chart(document.getElementById('empChart'),{
   type:'bar',
   data:{
     labels:empData.map(e=>e.name.split(' ')[0]),
@@ -728,7 +733,7 @@ new Chart(document.getElementById('empChart'),{
   },
   options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Geist Mono',size:11},color:'#667085',boxWidth:10,boxHeight:10}},tooltip:{backgroundColor:'#101828',titleColor:'#f9fafb',bodyColor:'#d0d5dd',borderColor:'#1d2939',borderWidth:1,padding:10,cornerRadius:8}},
     scales:{x:{stacked:true,grid:{display:false},border:{display:false},ticks:{color:'#667085',font:{family:'Geist Mono',size:10},maxRotation:45}},y:{stacked:true,grid:{color:'#f2f4f7'},border:{display:false},ticks:{color:'#98a2b3',font:{family:'Geist Mono',size:11}}}}}
-});
+}));
 
 // Employee table
 document.getElementById('empTable').innerHTML=`
@@ -747,6 +752,9 @@ document.getElementById('empTable').innerHTML=`
       <td><div class="dept-bar-row">${fP>0?`<div class="db-seg" style="width:${fP}%;background:rgba(105,65,198,0.5)" title="FOH: ${e.foh}"></div>`:''}${bP>0?`<div class="db-seg" style="width:${bP}%;background:rgba(196,50,10,0.5)" title="BOH: ${e.boh}"></div>`:''}${mP>0?`<div class="db-seg" style="width:${mP}%;background:rgba(2,122,72,0.5)" title="Mgmt: ${e.mgmt}"></div>`:''}</div></td>
     </tr>`;
   }).join('')}</tbody>`;
+
+}
+renderAll();
 
 function handleCSVUpload(input) {
   const file = input.files[0];
@@ -863,10 +871,11 @@ function rebuildReport() {
   if (typeof buildDeptBreakdown === 'function') buildDeptBreakdown();
   if (typeof buildDailyCards === 'function') buildDailyCards();
   if (typeof buildCLTable === 'function') buildCLTable('all');
-  // Trigger re-render by simulating page navigation to current page
-  const activeBtn = document.querySelector('.page-btn.active') || document.querySelector('[onclick*="overview"]');
-  if (activeBtn) activeBtn.click();
-  else if (typeof showPage === 'function') showPage('overview', null);
+  // Re-render entire report
+  renderAll();
+  // Return to dashboard
+  const dashBtn = document.querySelector('[data-page="dashboard"]');
+  if (dashBtn) { dashBtn.click(); }
 }
 
 </script>
